@@ -1,0 +1,25 @@
+{
+  "name": "chunky-back",
+  "version": "1.0.0",
+  "description": "\"chunky server\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jojoLockLock/Chunky-back.git"
+  },
+  "keywords": [
+    "chunky"
+  ],
+  "author": "jojoLockLock",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jojoLockLock/Chunky-back/issues"
+  },
+  "homepage": "https://github.com/jojoLockLock/Chunky-back#readme",
+  "dependencies": {
+    "nodejs-websocket": "^1.7.1"
+  }
+}
