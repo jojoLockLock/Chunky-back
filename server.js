@@ -61,19 +61,32 @@ let http = require("http");
 let fs = require("fs");
 
 http.createServer(function(req,res){
-    req.on('data',(data)=>{
-        console.info('http获得数据',data);
-    });
     let path = req.url;
     console.log("path1: "+path);
+    req.on('data',(data)=>{
+        try{
+            let reqData=data.toString();
+            console.info('http获得数据',reqData);
+            if(path=='/api/login'){
+                res.write(login(JSON.parse(reqData)));
+                res.end();
+            }
+        }catch (ex){
+            res.write(getRes({
+                "responseCode":-1,
+                "message":ex
+            }));
+            res.end();
+        }
+    });
+    
+    
     if(path == "/"){
         path = "/static/index.html";
     }else if(path == "/index.css"){
         path = "/static/index.css";
     }else if(path == "/index.js"){
         path = "/static/index.js";
-    }else if(path == "/api/login"){
-        res.write(login())
     }else if(path== "/routes/error.async.js"){
         path="/static/routes/error.async.js"
     }else if(path=="/routes/home.async.js"){
@@ -94,13 +107,50 @@ function sendFile(res,path){
         res.end();
     })
 }
-function login() {
-    return JSON.stringify({
-        "responseCode":1,
-        "userData":{
-            "userName":"tester",
-            "userKey":"123",
-            "message":"登录成功"
+function login(userData) {
+    return JSON.stringify(tempVerify(userData));
+}
+function tempVerify(userData) {
+    const {userName,userPassword}=userData;
+    console.info('get data',userName,userPassword);
+    if(userName=="manno"&&userPassword=='iampiggy'){
+        return {
+            "responseCode":1,
+            "userData":{
+                "userId":1,
+                "userName":"manno",
+                "userKey":"123",
+                "message":"登录成功",
+                "addressList":[
+                    {
+                        "userId":2,
+                        "userName":"jojo"
+                    }
+                ]
+            }
         }
-    })
+    }else if(userName=="jojo"&&userPassword=="admin"){
+        return {
+            "responseCode":1,
+            "userData":{
+                "userId":2,
+                "userName":"jojo",
+                "userKey":"123",
+                "message":"登录成功",
+                "addressList":[
+                    {
+                        "userId":1,
+                        "userName":"manno"
+                    }
+                ]
+            }
+        }
+    }else {
+        return {
+            "responseCode":-1,
+        }
+    }
+}
+function getRes(content) {
+    return JSON.stringify(content);
 }
