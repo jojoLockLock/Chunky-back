@@ -2,72 +2,150 @@
  * Created by JoJo on 2017/4/1.
  */
 const ws = require("nodejs-websocket");
-console.log("开始建立连接...");
+
+console.log("start connect..");
+
+// chatServer.on('connection',(client)=>{
+//
+//     client.name=`${client.remoteAddress}:${client.remotePort}`;
+//
+//     clientList.push(client);
+//     console.log(`new client is connect:${client.name}`);
+//     // client.end();
+//     client.on('data',(data)=>{
+//
+//         console.log("!!!:"+data);
+//         let req=JSON.parse(data);
+//
+//         if(req['operaCode']==2){
+//             getBroadcast(client)(data);
+//         }
+//
+//
+//     });
+//
+//     client.on('end',()=>{
+//         //移除关闭的client
+//         console.log('close client');
+//         clientList.splice(clientList.indexOf(client),1);
+//     });
+//
+//     client.on('error',(e)=>{
+//         console.log(`exception:${e}`)
+//     })
+// });
+// function getBroadcast(client) {
+//     return (message)=>{
+//         let cleanup=[];
+//         clientList.forEach(c=>{
+//             if(client!==c){
+//                 if(c.writable){
+//                     c.write(JSON.stringify({
+//                         responseCode:3,
+//                         content:message
+//                     }));
+//                 }else{
+//                     cleanup.push(c);
+//                     c.destory();
+//                 }
+//             }
+//         });
+//         cleanup.forEach(c=>{
+//             clientList.splice(clientList.indexOf(c),1);
+//         })
+//     }
+// }
+// chatServer.listen(8001);
+// console.log("WebSocket start, port:8001");
+
+//------------------------------------------------------------
+
+
 let connList=[];
 let server = ws.createServer(function(conn){
 
-    let ip=conn.headers.origin;
-    console.info('连接进入'+ip);
     connList.push(conn);
     let flag=connList.length-1;
 
     conn.on("text", function (str) {
-        console.log("收到的信息为:"+str);
+        console.log("text:"+str);
         let req=JSON.parse(str);
-        
+
         if(req['operaCode']==2){
-            connList.forEach((c,i)=>{
-                if(i!=flag){
-                    console.info('推送给大家');
-                    c.sendText(JSON.stringify({
-                        responseCode:3,
-                        content:req.content
-                    }));
-                }
-            })
+            getBroadcast(conn,connList)(req.context);
         }
-        
+
     });
     conn.on("close", function (code, reason) {
-        if(ip in connList){
-            delete connList[ip];
-            console.info('移出list');
-        }
-        console.log("关闭连接");
+        connList.splice(flag,1);
+        console.log("close connect ,and remove connect");
     });
     conn.on("error", function (code, reason) {
-        console.log("异常关闭");
+        console.log("exception");
     });
 
 
 }).listen(8001);
-console.log("WebSocket建立完毕");
 
 
-const response=(req,conn,connList)=>{
-    let ip=conn.headers.origin;
-    switch (req['operaCode']){
-        case 1:
-            break;
-        default:
-            break;
+function getBroadcast(conn,connList) {
+    return (message)=>{
+        let cleanup=[];
+        connList.forEach(c=>{
+            if(conn!==c){
+                conn.sendText(JSON.stringify({
+                    responseCode:3,
+                    content:message,
+                }))
+            }
+        });
+
     }
-};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 //创建web服务器
 let http = require("http");
 let fs = require("fs");
-
+let path = require('path');
+let writeLog=require('./writeLog').writeLog;
 http.createServer(function(req,res){
     let path = req.url;
-    console.log("path1: "+path);
+    let remoteAddress=getClientIp(req);
+    let requestContent=`${new Date().toLocaleString()} ${remoteAddress} ${path}`;
+    writeLog(requestContent);
+    console.log(requestContent);
     req.on('data',(data)=>{
         try{
             let reqData=data.toString();
             console.info('http获得数据',reqData);
             if(path=='/api/login'){
+                writeLog(`${new Date().toLocaleString()} ${remoteAddress} loginData：${reqData}`);
                 res.write(login(JSON.parse(reqData)));
                 res.end();
             }
@@ -95,6 +173,17 @@ http.createServer(function(req,res){
     sendFile(res,path);
 }).listen(3000);
 
+function getClientIp(req) {
+    try{
+        return req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress;
+    }catch (e){
+        console.info(e);
+    }
+}
+
 function sendFile(res,path){
     path = process.cwd()+path;
     fs.readFile(path,function(err,stdout,stderr){
@@ -110,46 +199,10 @@ function sendFile(res,path){
 function login(userData) {
     return JSON.stringify(tempVerify(userData));
 }
+let tempUser=require('./mock/tempUser');
 function tempVerify(userData) {
     const {userName,userPassword}=userData;
-    console.info('get data',userName,userPassword);
-    if(userName=="manno"&&userPassword=='iampiggy'){
-        return {
-            "responseCode":1,
-            "userData":{
-                "userId":1,
-                "userName":"manno",
-                "userKey":"123",
-                "message":"登录成功",
-                "addressList":[
-                    {
-                        "userId":2,
-                        "userName":"jojo"
-                    }
-                ]
-            }
-        }
-    }else if(userName=="jojo"&&userPassword=="admin"){
-        return {
-            "responseCode":1,
-            "userData":{
-                "userId":2,
-                "userName":"jojo",
-                "userKey":"123",
-                "message":"登录成功",
-                "addressList":[
-                    {
-                        "userId":1,
-                        "userName":"manno"
-                    }
-                ]
-            }
-        }
-    }else {
-        return {
-            "responseCode":-1,
-        }
-    }
+    return tempUser.verity(userName,userPassword);
 }
 function getRes(content) {
     return JSON.stringify(content);
