@@ -5,60 +5,7 @@ const ws = require("nodejs-websocket");
 
 console.log("start connect..");
 
-// chatServer.on('connection',(client)=>{
-//
-//     client.name=`${client.remoteAddress}:${client.remotePort}`;
-//
-//     clientList.push(client);
-//     console.log(`new client is connect:${client.name}`);
-//     // client.end();
-//     client.on('data',(data)=>{
-//
-//         console.log("!!!:"+data);
-//         let req=JSON.parse(data);
-//
-//         if(req['operaCode']==2){
-//             getBroadcast(client)(data);
-//         }
-//
-//
-//     });
-//
-//     client.on('end',()=>{
-//         //移除关闭的client
-//         console.log('close client');
-//         clientList.splice(clientList.indexOf(client),1);
-//     });
-//
-//     client.on('error',(e)=>{
-//         console.log(`exception:${e}`)
-//     })
-// });
-// function getBroadcast(client) {
-//     return (message)=>{
-//         let cleanup=[];
-//         clientList.forEach(c=>{
-//             if(client!==c){
-//                 if(c.writable){
-//                     c.write(JSON.stringify({
-//                         responseCode:3,
-//                         content:message
-//                     }));
-//                 }else{
-//                     cleanup.push(c);
-//                     c.destory();
-//                 }
-//             }
-//         });
-//         cleanup.forEach(c=>{
-//             clientList.splice(clientList.indexOf(c),1);
-//         })
-//     }
-// }
-// chatServer.listen(8001);
-// console.log("WebSocket start, port:8001");
 
-//------------------------------------------------------------
 
 
 let connList=[];
@@ -71,7 +18,7 @@ let server = ws.createServer(function(conn){
         console.log("text:"+str);
         let req=JSON.parse(str);
 
-        if(req['operaCode']==2){
+        if(Object.is(req['operaCode'],2)){
             getBroadcast(conn,connList)(req.context);
         }
 
@@ -133,19 +80,26 @@ function getBroadcast(conn,connList) {
 let http = require("http");
 let fs = require("fs");
 let path = require('path');
-let writeLog=require('./writeLog').writeLog;
+let writeServerLog=require('./writeLog').writeServerLog;
+const db=require('./db/db');
+
+//连接数据库
+db.connect();
+
+
+
 http.createServer(function(req,res){
     let path = req.url;
     let remoteAddress=getClientIp(req);
-    let requestContent=`${new Date().toLocaleString()} ${remoteAddress} ${path}`;
-    writeLog(requestContent);
+    let requestContent=` ${remoteAddress} ${path}`;
+    writeServerLog(requestContent);
     console.log(requestContent);
     req.on('data',(data)=>{
         try{
             let reqData=data.toString();
             console.info('http获得数据',reqData);
             if(path=='/api/login'){
-                writeLog(`${new Date().toLocaleString()} ${remoteAddress} loginData：${reqData}`);
+                writeServerLog(`${remoteAddress} loginData：${reqData}`);
                 res.write(login(JSON.parse(reqData)));
                 res.end();
             }
