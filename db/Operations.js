@@ -5,175 +5,161 @@
 const Collections=require('./Collections');
 const {User,ChatRecord,AddressList}=Collections;
 const utils=require('../utils');
-const {isEmpty}=utils;
+const {isEmpty,checkArguments}=utils;
 //创建角色
 function createUser(userAccount,userPassword,userName){
-    if(isEmpty(Array.from(arguments))){
-        throw Error("function createUser need 3 argument not allow undefined or null ")
-    }
+
     return new Promise((resolve,reject)=>{
-        User.isExist(userAccount).then((user)=>{
-            reject(`userAccount :${userAccount} have exist`);
-        },(msg)=>{
-            const newUser=new User({
-                userAccount,
-                userPassword,
-                userName,
-            });
-            newUser.save((err,newUser)=>{
-                if(err){
-                    throw Error(err);
+        checkArguments(arguments);
+
+        User.isExist(userAccount)
+            //判断用户是否已经存在
+            .then(result=>{
+                if(result.isExist){
+                    throw new Error(`Create User failed, userAccount :${userAccount} have exist`);
                 }else{
-                    createAddressList(newUser).then(()=>{
-                        resolve(newUser);
-                    },(err)=>{
-                        reject(err);
+                    const newUser=new User({
+                        userAccount,
+                        userPassword,
+                        userName,
                     });
+                    return newUser.save();
+
                 }
+            })
+            //创建新用户后成功后创建通讯录
+            .then(user=>{
+                return createAddressList(user)
+            })
+            //创建新的通讯录成功
+            .then(()=>{
+                resolve();
+            })
+            //抛出异常
+            .catch(err=>{
+                reject(err);
             });
-        });
     })
 }
 
 //创建通讯录
 function createAddressList(user) {
-    if(! (user instanceof  User)){
-        throw Error(`function createAddressList arguments must instanceof User ${User}`);
-    }
+
     return new Promise((resolve,reject)=>{
-            const {userAccount}=user;
-            //若不存在则创建
-            AddressList.isExist(userAccount).then((al)=>{
-                reject(`addressList from ${userAccount} have exist`);
-            },(msg)=>{
-                const newAddressList=new AddressList({
-                    userAccount
-                });
-                newAddressList.save((err,newAddressList)=>{
-                    if(err){
-                        reject(err);
-                    }else{
-                        resolve(newAddressList);
-                    }
-                })
+        if(! (user instanceof  User)){
+            throw Error(`function createAddressList arguments must instanceof User ${User}`);
+        }
+        const {userAccount}=user;
+        AddressList.isExist(userAccount)
+            //不存在则创建
+            .then(result=>{
+                if(result.isExist){
+                    throw new Error(`addressList from ${userAccount} have exist`);
+                }else{
+                    const newAddressList=new AddressList({
+                        userAccount
+                    });
+                    return newAddressList.save()
+                }
             })
+            //创建的回调
+            .then(addressList=>{
+                resolve(addressList);
+            })
+            //抛出异常
+            .catch(err=>{
+                reject(err);
+            })
+
 
     })
 }
 //加入通讯录
 function addToAddressList(userAccount,targetAccount) {
-    if(isEmpty([userAccount,targetAccount])){
-        throw Error(`function addToAddressList need 2 argument not allow undefined or null`)
-    }
+
     return new Promise((resolve,reject)=>{
-        AddressList.isExist(userAccount).then(
-            (al)=>{
-
-                User.isExist(targetAccount).then(
-                    (u)=>{
-                        AddressList.isAccountExistInAddressList(userAccount,targetAccount).then(
-                            (msg)=>{
-                                reject(msg);
-                            },
-                            (msg)=>{
-                                AddressList.update({userAccount},
-                                    {$push:{addressList:{targetAccount}}},
-                                    (err,res)=>{
-                                        if(err){
-                                            throw err;
-                                        }else{
-                                            resolve(`add success`);
-                                        }
-
-                                    })
-                            }
-                        )
-                    },
-                    (msg)=>{
-                        reject(msg);
-                    })
-            },
-            (msg)=>{
-                reject(msg);
+        checkArguments(arguments);
+        AddressList.isAccountExistInAddressList(userAccount,targetAccount)
+            //判断目标是否已经在通讯录内
+            .then(result=>{
+                if(result.isExist){
+                    throw new Error()
+                }else{
+                    return User.isExist(targetAccount);
+                }
             })
+            //判断目标用户是否存在
+            .then(result=>{
+                if(result.isExist){
+                    return AddressList.update({userAccount},{$push:{addressList:{targetAccount}}});
+                }
+            })
+            //加入成功
+            .then(()=>{
+                resolve();
+            })
+            .catch(err=>{
+               reject(err);
+            });
     })
 }
 //将双方相互加为好友
 function addToAddressListTogether(before,after) {
-    if(isEmpty([before,after])){
-        throw Error (`function addToAddressListTogether need 2 argument not allow undefined or null`)
-    }
     return new Promise((resolve,reject)=>{
-        addToAddressList(before,after).then(
-            ()=>{
-                addToAddressList(after,before).then(
-                    ()=>{
-                        resolve(`${before} and ${after} add addressList success`);
-                        createChatRecord(before,after).then(()=>{
-                            console.info('success');
-                        },()=>{
-                            console.info(`error`)
-                        });
-                    },
-                    (err)=>{
-                        reject(err)
-                    }
-                )
-            },
-            (err)=>{
-                reject(err)
-            }
-            )
+        checkArguments(arguments);
+        Promise.all([addToAddressList(before,after),addToAddressList(after,before)])
+            //互加成功 创建聊天记录
+            .then(()=>{
+                return createChatRecord(before,after);
+            })
+            .then(()=>{
+                resolve();
+            })
+            .catch((err)=>{
+                reject(err);
+            })
     })
 }
 //创建聊天记录
 function createChatRecord(beforeAccount,afterAccount) {
-    if(isEmpty([beforeAccount,afterAccount])){
-        throw Error (`function createChatRecord need 2 argument not allow undefined or null`)
-    }
     return new Promise((resolve,reject)=>{
-        ChatRecord.isExist(beforeAccount,afterAccount).then(
-            (cr)=>{
-                reject(`chatRecord between ${beforeAccount} and ${afterAccount} have  exist`)
-            },
-            (msg)=>{
-                const newChatRecord=new ChatRecord({
-                    beforeAccount,
-                    afterAccount,
-                });
+        checkArguments(arguments);
+        ChatRecord.isExist(beforeAccount,afterAccount)
+            //判断聊天记录是否已经存在
+            .then(result=>{
+                if(result.isExist){
+                    throw new Error(`chatRecord between ${beforeAccount} and ${afterAccount} have  exist`)
+                }else{
+                    const newChatRecord=new ChatRecord({
+                        beforeAccount,
+                        afterAccount
+                    });
 
-                newChatRecord.save((err,cr)=>{
-                    if(err){
-                        reject(err);
-                    }else{
-                        resolve(cr);
-                    }
-
-                })
-            }
-        )
+                    return newChatRecord.save();
+                }
+            })
+            //创建成功
+            .then(()=>{
+                resolve();
+            })
+            .catch(err=>{
+                reject(err);
+            })
     })
 }
-// createChatRecord("1","2").then((cr)=>{
-//     console.info(cr);
-// },(err)=>{
-//     console.info(err);
-// })
-// createUser('2','1','one').then((u)=>{
-//     console.info(u)
-// },(err)=>{
-//     console.info(err)
-// })
-// createUser('1','1','one').then((u)=>{
-//     console.info(u)
-// },(err)=>{
-//     console.info(err)
-// })
-// addToAddressListTogether('1','2').then((user)=>{
-//     console.info(user);
-// },(err)=>{
-//     console.info(err);
-// });
+
+
+
+Promise.all([createUser("1","123","one"),createUser("2","123","two")])
+    .then(()=>{
+        return addToAddressListTogether("1","2")
+    })
+    .then(()=>{
+        console.info(`success`);
+    })
+    .catch(err=>{
+        console.info(err);
+    });
 
 
 

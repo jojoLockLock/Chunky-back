@@ -4,7 +4,7 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 const utils=require('../utils');
-const {isEmpty}=utils;
+const {isEmpty,checkArguments}=utils;
 const userSchema=new Schema({
     userAccount:String,
     userName:String,
@@ -20,19 +20,18 @@ userSchema.methods.getKey=function () {
 
 //判断userAccount是否存在
 userSchema.statics.isExist=function (userAccount) {
-    if(isEmpty([userAccount])){
-        throw Error(`function userSchema.statics.isExist need 1 argument not allow undefined or null`)
-    }
+
     return new Promise((resolve,reject)=>{
+
+        checkArguments(arguments);
+
         this.find({userAccount}).exec((err,users)=>{
             if(err){
-                throw err;
+                reject(err);
             }
-            if(Object.is(users.length,0)){
-                reject(`userAccount:${userAccount} have not exist`);
-            }else{
-                resolve(users[0]);
-            }
+            Object.is(users.length,0)
+                ?resolve({isExist:false})
+                :resolve({isExist:true,target:users[0]});
 
         })
     })
@@ -46,52 +45,54 @@ const addressListSchema=new Schema({
 
 //判断通讯录是否存在
 addressListSchema.statics.isExist=function (userAccount) {
-    if(isEmpty([userAccount])){
-        throw Error(`function addressListSchema.statics.canCreate need 1 argument not allow undefined or null`)
-    }
     return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
         this.find({userAccount}).exec((err,al)=>{
             if(err){
-                throw err;
+                reject(err);
             }
-            if(Object.is(al.length,0)){
-                reject(`addressList from userAccount:${userAccount} have not exist`);
-            }else{
-                resolve(al[0]);
-            }
+            Object.is(al.length,0)
+                ?resolve({isExist:false})
+                :resolve({isExist:true,target:al[0]});
 
         })
     })
 };
 //判断目标是否已在通讯录内
 addressListSchema.statics.isAccountExistInAddressList=function (userAccount,targetAccount) {
-    if(isEmpty([userAccount,targetAccount])){
-        throw Error(`function addressListSchema.statics.isAccountInExist need 2 argument not allow undefined or null`)
-    }
-    return new Promise((resolve,reject)=>{
-        this.isExist(userAccount).then(
-            (al)=>{
-                let isExist=false;
 
-                al.addressList.forEach(a=>{
-                    if(Object.is(a.targetAccount,targetAccount)){
-                        isExist=true
+    return new Promise((resolve,reject)=>{
+
+        checkArguments(arguments);
+
+        this.isExist(userAccount)
+        //判断通讯录是否存在，存在则继续判断目标是否在通讯录内
+            .then(result=>{
+                if(result.isExist){
+                    return result.target;
+                }else{
+                    throw Error(`addressList from ${userAccount} have not exist`);
+                }
+            })
+            //判断目标是否在通讯录内
+            .then(target=>{
+                let isExistInAddressList=target.addressList.some(tc=>{
+                    if(targetAccount==tc.targetAccount){
+                        return true;
                     }
                 });
-
-                if(isExist){
-                    resolve(`${targetAccount} is exist in addressList from ${userAccount}`);
+                if(isExistInAddressList){
+                    resolve({isExist:true,target:AddressList});
                 }else{
-                    reject();
+                    resolve({isExist:false});
                 }
-            },
-            (msg)=>{
-              reject(msg);
-            }
-        )
+            })
+            //抛出异常
+            .catch(err=>{
+                throw Error(err);
+            });
     })
 };
-
 
 const chatRecordSchema=new Schema({
     beforeAccount:String,
@@ -107,22 +108,21 @@ const chatRecordSchema=new Schema({
 });
 //判断聊天记录是否已经存在
 chatRecordSchema.statics.isExist=function (beforeAccount,afterAccount) {
-    if(isEmpty([beforeAccount,afterAccount])){
-        throw Error(`function addressListSchema.statics.isExist need 2 argument not allow undefined or null`)
-    }
     return new Promise((resolve,reject)=>{
+
+        checkArguments(arguments);
+
         this.find({$or:[
             {beforeAccount,afterAccount},
             {afterAccount,beforeAccount}
         ]}).exec((err,cr)=>{
             if(err){
-                throw err;
+                reject(err);
             }
-            if(Object.is(cr.length,0)){
-                reject(`chatRecord between ${beforeAccount} and ${afterAccount} have not exist`);
-            }else{
-                resolve(cr[0]);
-            }
+            Object.is(cr.length,0)
+                ?resolve({isExist:false})
+                :resolve({isExist:true,target:cr[0]});
+
         })
     })
 };
@@ -132,6 +132,7 @@ const User=mongoose.model('User',userSchema);
 const AddressList=mongoose.model('AddressList',addressListSchema);
 
 const ChatRecord=mongoose.model('ChatRecord',chatRecordSchema);
+
 
 
 module.exports={

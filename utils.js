@@ -12,7 +12,16 @@ const isEmpty=(args)=>{
     }
 };
 
+//检测函数参数是否为null或者underfined 且是否满足个数 并抛出异常
+const checkArguments=(args)=>{
+
+    if(isEmpty(Array.from(args))||(args.length<args.callee.length)){
+
+        throw Error(`function ${args.callee.name} need ${args.callee.length} argument not allow undefined or null `)
+    }
+};
 
 module.exports={
-    isEmpty
+    isEmpty,
+    checkArguments
 };
