@@ -62,7 +62,7 @@ const dbUrl=require('./../Config').url.db;
 module.exports={
     connect() {
         mongoose.connect(dbUrl);
-        require('./Operations');
+
     },
     disconnect() {
         mongoose.disconnect();
