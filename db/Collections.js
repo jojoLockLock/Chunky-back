@@ -4,6 +4,8 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 const utils=require('../utils');
+const jwt=require('jsonwebtoken');
+const tokenKey=require('./key').tokenKey;
 const {isEmpty,checkArguments}=utils;
 const userSchema=new Schema({
     userAccount:String,
@@ -11,12 +13,32 @@ const userSchema=new Schema({
     userPassword:String,
     isFreeze:{type:Boolean,default:false},
 });
+//存放所有用户的token
+let tokens={};
 userSchema.methods.isVerify=function (userPassword) {
     return Object.is(this.userPassword,userPassword);
 };
-userSchema.methods.getKey=function () {
-    return `${Date.now.toString()}?${this.userAccount}`
+//产生token
+userSchema.statics.getToken=function (userAccount) {
+
+    let token=jwt.sign(userAccount,tokenKey);
+    tokens[userAccount]=token;
+    return token;
 };
+//校验token
+userSchema.statics.isVerifyToken=function (userAccount,token) {
+    return Object.is(tokens[userAccount],token);
+};
+
+// let token=jwt.sign("123",'xxxx');
+// console.info(token);
+//
+//
+// jwt.verify(token,"xxxx",function (err,decoded) {
+//     console.info(err);
+//     console.info(decoded);
+// })
+
 
 //判断userAccount是否存在
 userSchema.statics.isExist=function (userAccount) {
@@ -77,7 +99,7 @@ addressListSchema.statics.isAccountExistInAddressList=function (userAccount,targ
             //判断目标是否在通讯录内
             .then(target=>{
                 let isExistInAddressList=target.addressList.some(tc=>{
-                    if(targetAccount==tc.targetAccount){
+                    if(Object.is(targetAccount,tc.targetAccount)){
                         return true;
                     }
                 });

@@ -5,7 +5,7 @@
 const Collections=require('./Collections');
 const {User,ChatRecord,AddressList}=Collections;
 const utils=require('../utils');
-const {isEmpty,checkArguments}=utils;
+const {isEmpty,checkArguments,setError}=utils;
 //创建角色
 function createUser(userAccount,userPassword,userName){
     return new Promise((resolve,reject)=>{
@@ -15,7 +15,9 @@ function createUser(userAccount,userPassword,userName){
             //判断用户是否已经存在
             .then(result=>{
                 if(result.isExist){
-                    throw new Error(`Create User failed, userAccount :${userAccount} have exist`);
+                    let error= new Error(`Create User failed, userAccount :${userAccount} have exist`);
+                    error.code=1111;
+                    throw error;
                 }else{
                     const newUser=new User({
                         userAccount,
@@ -73,6 +75,7 @@ function createAddressList(user) {
 
     })
 }
+
 //加入通讯录
 function addToAddressList(userAccount,targetAccount) {
 
@@ -104,6 +107,7 @@ function addToAddressList(userAccount,targetAccount) {
             });
     })
 }
+
 //将双方相互加为好友
 function addToAddressListTogether(before,after) {
     return new Promise((resolve,reject)=>{
@@ -121,6 +125,7 @@ function addToAddressListTogether(before,after) {
             })
     })
 }
+
 //创建聊天记录
 function createChatRecord(beforeAccount,afterAccount) {
     return new Promise((resolve,reject)=>{
@@ -148,6 +153,7 @@ function createChatRecord(beforeAccount,afterAccount) {
             })
     })
 }
+
 //添加到聊天记录
 function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
     return new Promise((resolve,reject)=>{
@@ -156,7 +162,7 @@ function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
             .then(result=>{
                 if(result.isExist){
                     let _id=result.target._id;
-                    return ChatRecord.update({_id},{$push:{records:{senderAccount,content}}})
+                    return ChatRecord.update({_id},{$push:{records:{senderAccount,content,date:Date.now()}}})
                 }else{
                     throw new Error(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`);
                 }
@@ -169,7 +175,111 @@ function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
         })
     })
 }
+//获得聊天记录
+function getChatRecord(beforeAccount,afterAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        ChatRecord.isExist(beforeAccount,afterAccount)
+            .then(result=>{
+                if(result.isExist){
+                    return result.target;
+                }else{
+                    throw new Error(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`);
+                }
+            })
+            .then(chatRecord=>{
+                const records=chatRecord.records.map(item=>{
+                    const {senderAccount,date,content}=item;
+                    return {
+                        senderAccount,
+                        content,
+                        date:date.toString()
+                    }
+                });
+                resolve(records);
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
 
+//登录
+function loginVerify(userAccount,userPassword) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        User.isExist(userAccount)
+            .then(result=>{
+                if(result.isExist){
+                    return result.target.isVerify(userPassword);
+                }else{
+                    throw Error(`userAccount:${userAccount} have not exist`);
+                }
+            })
+            .then(isVerify=>{
+                if(isVerify){
+                    resolve(isVerify);
+                }else{
+                    throw Error(`userPassword for ${userAccount} is wrong`);
+                }
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+//获得用户数据
+function getUserData(userAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        User.isExist(userAccount)
+            .then(result=>{
+                if(result.isExist){
+                    const user=result.target;
+                    const {userName}=user;
+                    resolve({
+                        userName,
+                        userAccount,
+                    })
+                }else{
+                    throw Error(`userAccount:${userAccount} have not exist`);
+                }
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+//获得用户好友列表
+function getUserAddressList(userAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        AddressList.isExist(userAccount)
+            .then(result=>{
+                if(result.isExist){
+                    return result.target.addressList;
+                }else{
+                    throw Error(`AddressList from userAccount:${userAccount} have not exist`);
+                }
+            })
+            .then(addressList=>{
+                let proArr=[];
+                addressList.forEach(item=>{
+                    proArr.push(getUserData(item.targetAccount));
+                });
+                return Promise.all(proArr);
+
+            })
+            .then(userDataList=>{
+                resolve(userDataList);
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+
+loginVerify("1","1");
 // Promise.all([createUser("1","123","one"),createUser("2","123","two")])
 //     .then(()=>{
 //         return addToAddressListTogether("1","2")
@@ -179,12 +289,16 @@ function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
 //     })
 //     .catch(err=>{
 //         console.info(err);
+//         console.info(err.name);
+//         console.info(err.code);
 //     });
 
 // addChatRecord("1","2","1","hello").then(()=>{
 //     console.info('add success');
 // }).catch((err)=>{
 //     console.info(err);
+//     console.info(err.name);
+//     console.info(err.code);
 // });
 
 

@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/jojoLockLock/Chunky-back#readme",
   "dependencies": {
+    "jsonwebtoken": "^7.4.0",
+    "koa": "^2.2.0",
     "mongoose": "^4.9.6",
     "nodejs-websocket": "^1.7.1"
   }

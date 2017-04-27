@@ -17,11 +17,19 @@ const checkArguments=(args)=>{
 
     if(isEmpty(Array.from(args))||(args.length<args.callee.length)){
 
-        throw Error(`function ${args.callee.name} need ${args.callee.length} argument not allow undefined or null `)
+        throw setError(`function ${args.callee.name} need ${args.callee.length} argument not allow undefined or null `,1);
     }
+};
+
+//创建一个Error对象
+const setError=(message,code)=>{
+    let error=new Error(message);
+    error.code=code;
+    return error;
 };
 
 module.exports={
     isEmpty,
-    checkArguments
+    checkArguments,
+    setError,
 };
