@@ -30,16 +30,6 @@ userSchema.statics.isVerifyToken=function (userAccount,token) {
     return Object.is(tokens[userAccount],token);
 };
 
-// let token=jwt.sign("123",'xxxx');
-// console.info(token);
-//
-//
-// jwt.verify(token,"xxxx",function (err,decoded) {
-//     console.info(err);
-//     console.info(decoded);
-// })
-
-
 //判断userAccount是否存在
 userSchema.statics.isExist=function (userAccount) {
 
@@ -48,6 +38,7 @@ userSchema.statics.isExist=function (userAccount) {
         checkArguments(arguments);
 
         this.find({userAccount}).exec((err,users)=>{
+
             if(err){
                 reject(err);
             }
@@ -58,7 +49,6 @@ userSchema.statics.isExist=function (userAccount) {
         })
     })
 };
-
 
 const addressListSchema=new Schema({
     userAccount:String,

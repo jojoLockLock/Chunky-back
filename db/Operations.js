@@ -207,10 +207,15 @@ function getChatRecord(beforeAccount,afterAccount) {
 //登录
 function loginVerify(userAccount,userPassword) {
     return new Promise((resolve,reject)=>{
+
         checkArguments(arguments);
+
         User.isExist(userAccount)
             .then(result=>{
+
+
                 if(result.isExist){
+
                     return result.target.isVerify(userPassword);
                 }else{
                     throw Error(`userAccount:${userAccount} have not exist`);
@@ -228,6 +233,9 @@ function loginVerify(userAccount,userPassword) {
             })
     })
 }
+
+
+
 //获得用户数据
 function getUserData(userAccount) {
     return new Promise((resolve,reject)=>{
@@ -279,19 +287,10 @@ function getUserAddressList(userAccount) {
     })
 }
 
-loginVerify("1","1");
-// Promise.all([createUser("1","123","one"),createUser("2","123","two")])
-//     .then(()=>{
-//         return addToAddressListTogether("1","2")
-//     })
-//     .then(()=>{
-//         console.info(`success`);
-//     })
-//     .catch(err=>{
-//         console.info(err);
-//         console.info(err.name);
-//         console.info(err.code);
-//     });
+
+ChatRecord.isExist("1","2").then(()=>{
+    console.info('....');
+})
 
 // addChatRecord("1","2","1","hello").then(()=>{
 //     console.info('add success');
@@ -301,4 +300,14 @@ loginVerify("1","1");
 //     console.info(err.code);
 // });
 
-
+module.exports={
+    createUser,
+    createAddressList,
+    createChatRecord,
+    addToAddressListTogether,
+    getUserData,
+    getUserAddressList,
+    loginVerify,
+    addChatRecord,
+    getChatRecord
+};
