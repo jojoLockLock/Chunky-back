@@ -5,7 +5,8 @@
 const Collections=require('./Collections');
 const {User,ChatRecord,AddressList}=Collections;
 const utils=require('../utils');
-const {isEmpty,checkArguments,setError}=utils;
+const {isEmpty,checkArguments,getError}=utils;
+const {errorType}=ErrorConfig;
 //创建角色
 function createUser(userAccount,userPassword,userName){
     return new Promise((resolve,reject)=>{
@@ -15,9 +16,7 @@ function createUser(userAccount,userPassword,userName){
             //判断用户是否已经存在
             .then(result=>{
                 if(result.isExist){
-                    let error= new Error(`Create User failed, userAccount :${userAccount} have exist`);
-                    error.code=1111;
-                    throw error;
+                    throw getError(`Create User failed, userAccount :${userAccount} have exist`,errorType.USER_EXIST);
                 }else{
                     const newUser=new User({
                         userAccount,
@@ -48,14 +47,14 @@ function createAddressList(user) {
 
     return new Promise((resolve,reject)=>{
         if(! (user instanceof  User)){
-            throw Error(`function createAddressList arguments must instanceof User ${User}`);
+            throw getError(`function createAddressList arguments must instanceof User ${User}`);
         }
         const {userAccount}=user;
         AddressList.isExist(userAccount)
             //不存在则创建
             .then(result=>{
                 if(result.isExist){
-                    throw new Error(`addressList from ${userAccount} have exist`);
+                    throw getError(`addressList from ${userAccount} have exist`,errorType.ADDRESS_LIST_EXIST);
                 }else{
                     const newAddressList=new AddressList({
                         userAccount
@@ -85,7 +84,8 @@ function addToAddressList(userAccount,targetAccount) {
             //判断目标是否已经在通讯录内
             .then(result=>{
                 if(result.isExist){
-                    throw new Error(`targetAccount:${targetAccount} have exist in AddressList from userAccount ${userAccount}`)
+                    throw getError(`targetAccount:${targetAccount} have exist in AddressList from userAccount ${userAccount}`,
+                            errorType.ACCOUNT_EXIST_IN_ADDRESS_LIST)
                 }else{
                     return User.isExist(targetAccount);
                 }
@@ -95,7 +95,7 @@ function addToAddressList(userAccount,targetAccount) {
                 if(result.isExist){
                     return AddressList.update({userAccount},{$push:{addressList:{targetAccount}}});
                 }else{
-                    throw new Error(`targetAccount:${targetAccount} have not exist`);
+                    throw getError(`targetAccount:${targetAccount} have not exist`,errorType.USER_NOT_EXIST);
                 }
             })
             //加入成功
@@ -134,7 +134,8 @@ function createChatRecord(beforeAccount,afterAccount) {
             //判断聊天记录是否已经存在
             .then(result=>{
                 if(result.isExist){
-                    throw new Error(`chatRecord between ${beforeAccount} and ${afterAccount} have  exist`)
+                    throw getError(`chatRecord between ${beforeAccount} and ${afterAccount} have exist`
+                        ,errorType.CHAT_RECORD_EXIST)
                 }else{
                     const newChatRecord=new ChatRecord({
                         beforeAccount,
@@ -164,7 +165,8 @@ function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
                     let _id=result.target._id;
                     return ChatRecord.update({_id},{$push:{records:{senderAccount,content,date:Date.now()}}})
                 }else{
-                    throw new Error(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`);
+                    throw getError(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`
+                    ,errorType.CHAT_RECORD_NOT_EXIST);
                 }
             })
             .then(()=>{
@@ -184,7 +186,8 @@ function getChatRecord(beforeAccount,afterAccount) {
                 if(result.isExist){
                     return result.target;
                 }else{
-                    throw new Error(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`);
+                    throw getError(`ChatRecord between ${beforeAccount} and ${afterAccount} have not exist`
+                    ,errorType.CHAT_RECORD_NOT_EXIST);
                 }
             })
             .then(chatRecord=>{
@@ -212,20 +215,18 @@ function loginVerify(userAccount,userPassword) {
 
         User.isExist(userAccount)
             .then(result=>{
-
-
                 if(result.isExist){
 
                     return result.target.isVerify(userPassword);
                 }else{
-                    throw Error(`userAccount:${userAccount} have not exist`);
+                    throw getError(`userAccount:${userAccount} have not exist`,errorType.USER_NOT_EXIST);
                 }
             })
             .then(isVerify=>{
                 if(isVerify){
                     resolve(isVerify);
                 }else{
-                    throw Error(`userPassword for ${userAccount} is wrong`);
+                    throw getError(`userPassword for ${userAccount} is wrong`,errorType.USER_PASSWORD_ERROR);
                 }
             })
             .catch(err=>{
@@ -250,7 +251,8 @@ function getUserData(userAccount) {
                         userAccount,
                     })
                 }else{
-                    throw Error(`userAccount:${userAccount} have not exist`);
+                    throw getError(`userAccount:${userAccount} have not exist`
+                    ,errorType.USER_NOT_EXIST);
                 }
             })
             .catch(err=>{
@@ -267,7 +269,8 @@ function getUserAddressList(userAccount) {
                 if(result.isExist){
                     return result.target.addressList;
                 }else{
-                    throw Error(`AddressList from userAccount:${userAccount} have not exist`);
+                    throw getError(`AddressList from userAccount:${userAccount} have not exist`
+                    ,errorType.ADDRESS_LIST_NOT_EXIST);
                 }
             })
             .then(addressList=>{

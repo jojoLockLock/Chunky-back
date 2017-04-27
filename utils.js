@@ -1,8 +1,8 @@
 /**
  * Created by JoJo on 2017/4/9.
  */
-
-
+const ErrorConfig=require('./config/ErrorConfig');
+const {errorType}=ErrorConfig;
 //args必须为数组
 //判断args是否有null或者undefined
 const isEmpty=(args)=>{
@@ -17,19 +17,20 @@ const checkArguments=(args)=>{
 
     if(isEmpty(Array.from(args))||(args.length<args.callee.length)){
 
-        throw setError(`function ${args.callee.name} need ${args.callee.length} argument not allow undefined or null `,1);
+        throw getError(`function ${args.callee.name} need ${args.callee.length} argument not allow undefined or null `
+            ,errorType.ARGUMENTS_ERROR);
     }
 };
 
 //创建一个Error对象
-const setError=(message,code)=>{
+const getError=(message,type)=>{
     let error=new Error(message);
-    error.code=code;
+    error.tpye=type;
     return error;
 };
 
 module.exports={
     isEmpty,
     checkArguments,
-    setError,
+    getError,
 };

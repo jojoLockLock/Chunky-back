@@ -57,7 +57,7 @@ db.on('close', ()=>{
     },1000)
 });
 
-const dbUrl=require('./../Config').url.db;
+const dbUrl=require('./../config/UrlConfig').url.db;
 
 module.exports={
     connect() {
