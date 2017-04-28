@@ -21,15 +21,18 @@ userSchema.methods.isVerify=function (userPassword) {
 //产生token
 userSchema.statics.getToken=function (userAccount) {
 
-    let token=jwt.sign(userAccount,tokenKey);
+    let token=jwt.sign(userAccount+Date.now().toString(),tokenKey);
     tokens[userAccount]=token;
     return token;
 };
 //校验token
 userSchema.statics.isVerifyToken=function (userAccount,token) {
-    return Object.is(tokens[userAccount],token);
-};
 
+    return Object.is(tokens[userAccount],token)&&(!isEmpty([userAccount,token]));
+};
+userSchema.statics.delToken=function (userAccount) {
+    tokens[userAccount]=null;
+};
 //判断userAccount是否存在
 userSchema.statics.isExist=function (userAccount) {
 

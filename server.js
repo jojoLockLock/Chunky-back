@@ -81,7 +81,7 @@ let http = require("http");
 let fs = require("fs");
 let path = require('path');
 let writeServerLog=require('./writeLog').writeServerLog;
-const db=require('./db/db');
+const db=require('./db/dbServer');
 
 //连接数据库
 db.connect();

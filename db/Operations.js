@@ -6,7 +6,7 @@ const Collections=require('./Collections');
 const {User,ChatRecord,AddressList}=Collections;
 const utils=require('../utils');
 const {isEmpty,checkArguments,getError}=utils;
-const {errorType}=ErrorConfig;
+const {errorType}=require("../config/ErrorConfig");
 //创建角色
 function createUser(userAccount,userPassword,userName){
     return new Promise((resolve,reject)=>{
@@ -291,17 +291,7 @@ function getUserAddressList(userAccount) {
 }
 
 
-ChatRecord.isExist("1","2").then(()=>{
-    console.info('....');
-})
-
-// addChatRecord("1","2","1","hello").then(()=>{
-//     console.info('add success');
-// }).catch((err)=>{
-//     console.info(err);
-//     console.info(err.name);
-//     console.info(err.code);
-// });
+const {getToken,isVerifyToken,delToken}=User;
 
 module.exports={
     createUser,
@@ -312,5 +302,8 @@ module.exports={
     getUserAddressList,
     loginVerify,
     addChatRecord,
-    getChatRecord
+    getChatRecord,
+    getToken,
+    isVerifyToken,
+    delToken,
 };

@@ -2,10 +2,7 @@
  * Created by jojo on 2017/4/26.
  */
 const writeDbLog=require('./../writeLog').writeDbLog;
-
-
 const mongoose=require('mongoose');
-
 db=mongoose.connection;
 
 db.on('error', ()=>{
@@ -57,14 +54,15 @@ db.on('close', ()=>{
     },1000)
 });
 
-const dbUrl=require('./../config/UrlConfig').url.db;
+
 
 module.exports={
-    connect() {
+    connect(dbUrl) {
         mongoose.connect(dbUrl);
-
+        return db;
     },
     disconnect() {
         mongoose.disconnect();
+        return db;
     }
 };
