@@ -16,13 +16,13 @@ const checkConnection=(ws)=>{
     const {host}=headers;
     return Object.is(url,'/chat');
 };
-const getAuthTimer=(connection,second)=>{
-    if(isEmpty([connection,second])){
+const getAuthTimer=(mc,second)=>{
+    if(isEmpty([mc,second])){
         return undefined;
     }
     return setTimeout(()=>{
-        if(Object.is(connection.isAuth,false)){
-            connection.ws.close();
+        if(Object.is(mc.isAuth,false)){
+            mc.connection.close();
             console.info(`is not auth after ${second} second,close connection`);
         }
     },second*1000);
@@ -41,16 +41,14 @@ module.exports={
                 ws.close();
             }
 
-            let connection={
-                isAuth:false,
-                ws,
-            };
-            //10秒未校验身份则断开连接；
-            const authTimer=getAuthTimer(connection,30);
+
             const mc=new MessageControllers(ws,conList);
-            mc.add('auth',authController,()=>{
-                if(connection.isAuth){
-                   clearTimeout(authTimer);
+
+            //10秒未校验身份则断开连接；
+            const authTimer=getAuthTimer(mc,30);
+            mc.add('auth',authController,(send,content,mc)=>{
+                if(mc.isAuth){
+                    conList[mc.userAccount]=mc.connection;
                 }
             });
             mc.redirect(redirectController);
@@ -67,11 +65,13 @@ class MessageControllers {
         this.controllers={};
         this.callbacks={};
         this.conList=conList;
+        this.isAuth=false;
+        this.userAccount=undefined;
         this.init();
     }
     init() {
-        const {connection,controllers,conList,callbacks}=this;
-        ws.on('message',(message)=>{
+        const {connection,controllers,callbacks}=this;
+        connection.on('message',(message)=>{
             //绑定send方法；
             let send=connection.send.bind(connection);
             try{
@@ -79,11 +79,11 @@ class MessageControllers {
                     type=content.type;
 
                 if(!isEmpty([type])){
-                    controllers[type](send,content,connection,conList);
-                    callbacks[type]();
+                    controllers[type](send,content,this);
+                    callbacks[type](send,content,this);
                 }else if(controllers["__redirect__"]){
-                    controllers["__redirect__"](send,content,connection,conList);
-                    callbacks["__redirect__"]();
+                    controllers["__redirect__"](send,content,this);
+                    callbacks["__redirect__"](send,content,this);
                 }
             }catch (e){
                 console.info(e);
@@ -100,7 +100,7 @@ class MessageControllers {
             throw new Error('controller must a function');
         }
         if(!Object.is(typeof type,"string")){
-            throw new Error('controller must string');
+            throw new Error('type must string');
         }
 
         this.controllers[type]=controller;
@@ -120,8 +120,8 @@ class MessageControllers {
             console.info('arguments error');
             return;
         }
-        if(!Object.is(typeof type,"string")){
-            throw new Error('controller must string');
+        if(!Object.is(typeof controller,"function")){
+            throw new Error('controller must a function');
         }
         this.controllers["__redirect__"]=controller;
 
