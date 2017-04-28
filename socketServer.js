@@ -83,7 +83,7 @@ module.exports={
                     type:content.type
                 }))
             });
-            
+
             ws.on('close',function () {
                 console.info('close');
             });
