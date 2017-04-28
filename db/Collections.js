@@ -128,8 +128,8 @@ chatRecordSchema.statics.isExist=function (beforeAccount,afterAccount) {
         checkArguments(arguments);
 
         this.find({$or:[
-            {beforeAccount,afterAccount},
-            {afterAccount,beforeAccount}
+            {beforeAccount:beforeAccount,afterAccount:afterAccount},
+            {afterAccount:beforeAccount,beforeAccount:afterAccount}
         ]}).exec((err,cr)=>{
             if(err){
                 reject(err);
@@ -147,7 +147,6 @@ const User=mongoose.model('User',userSchema);
 const AddressList=mongoose.model('AddressList',addressListSchema);
 
 const ChatRecord=mongoose.model('ChatRecord',chatRecordSchema);
-
 
 
 module.exports={

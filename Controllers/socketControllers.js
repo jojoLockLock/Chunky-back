@@ -2,17 +2,29 @@
  * Created by jojo on 2017/4/28.
  */
 const operations=require('../db/Operations');
+const utils=require('../utils');
 const {isVerifyToken}=operations;
+const {isEmpty,checkArguments}=utils;
+const {isAccountExistInAddressList,addChatRecord}=operations;
 const getJsonMessage=(obj)=>{
     return JSON.stringify(obj);
 };
 
-const authController=(send,content,mc)=>{
-    const {userAccount,token}=content;
+const redirectController=(send,message,mc)=>{
+    send(getJsonMessage({
+        message:"type not dispose",
+        status:-1,
+        type:message.type
+    }))
+};
+
+const authController=(send,message,mc)=>{
+    const {userAccount,token}=message;
     const {connection,conList}=mc;
     if(isVerifyToken(userAccount,token)){
         mc.isAuth=true;
         mc.userAccount=userAccount;
+        conList[userAccount]=connection;
         send(getJsonMessage({
             message:"auth socket link success",
             status:1,
@@ -39,19 +51,55 @@ const authController=(send,content,mc)=>{
 
 };
 
-const redirectController=(send,content,mc)=>{
-    send(getJsonMessage({
-        message:"type not dispose",
-        status:-1,
-        type:content.type
-    }))
-};
 
-const boardCastController=(send,content,mc)=>{
 
+const boardCastController=(send,message,mc)=>{
+    const {targetAccount,content}=message;
+    const {userAccount,conList}=mc;
+    if(!mc.isAuth){
+        send(getJsonMessage({
+            message:"not auth connection",
+            type:"boardCast",
+            status:-1,
+        }));
+        return ;
+    }
+    isAccountExistInAddressList(userAccount,targetAccount)
+        .then(()=>{
+            return addChatRecord(userAccount,targetAccount,userAccount,content);
+        })
+        .then(()=>{
+            if(targetAccount in conList){
+                conList[targetAccount].send(getJsonMessage({
+                    type:"boardCast",
+                    senderAccount:userAccount,
+                    content,
+                }));
+                send(getJsonMessage({
+                    message:"send message success",
+                    status:1,
+                    type:"boardCast"
+                }));
+            }else{
+                send(getJsonMessage({
+                    message:"targetAccount not on line",
+                    status:-2,
+                    type:"boardCast"
+                }))
+            }
+
+        })
+        .catch(err=>{
+            send(getJsonMessage({
+                message:err.message,
+                type:"boardCast",
+                status:-1,
+            }))
+        })
 };
 
 module.exports={
     authController,
     redirectController,
+    boardCastController,
 };

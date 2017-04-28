@@ -29,7 +29,7 @@ const getAuthTimer=(mc,second)=>{
 
 };
 
-const {authController,redirectController}=socketControllers;
+const {authController,redirectController,boardCastController}=socketControllers;
 module.exports={
     start:(server)=>{
         const wss = new WebSocketServer({
@@ -44,13 +44,10 @@ module.exports={
 
             const mc=new MessageControllers(ws,conList);
 
-            //10秒未校验身份则断开连接；
-            const authTimer=getAuthTimer(mc,30);
-            mc.add('auth',authController,(send,content,mc)=>{
-                if(mc.isAuth){
-                    conList[mc.userAccount]=mc.connection;
-                }
-            });
+            //x秒未校验身份则断开连接；
+            // const authTimer=getAuthTimer(mc,60);
+            mc.add('auth',authController);
+            mc.add('boardCast',boardCastController);
             mc.redirect(redirectController);
 
         });
@@ -67,23 +64,31 @@ class MessageControllers {
         this.conList=conList;
         this.isAuth=false;
         this.userAccount=undefined;
+        this.send=connection.send.bind(connection);
+        connection.send=this.send;
         this.init();
     }
     init() {
-        const {connection,controllers,callbacks}=this;
+        const {connection,controllers,callbacks,send}=this;
         connection.on('message',(message)=>{
             //绑定send方法；
-            let send=connection.send.bind(connection);
+
             try{
-                let content=JSON.parse(message),
-                    type=content.type;
+                let _message=JSON.parse(message),
+                    type=_message.type;
 
                 if(!isEmpty([type])){
-                    controllers[type](send,content,this);
-                    callbacks[type](send,content,this);
+                    controllers[type](send,_message,this);
+                    // if(!isEmpty(callbacks[type])){
+                    //     callbacks[type](send,_message,this);
+                    // }
+
                 }else if(controllers["__redirect__"]){
-                    controllers["__redirect__"](send,content,this);
-                    callbacks["__redirect__"](send,content,this);
+                    controllers["__redirect__"](send,_message,this);
+                    // if(!isEmpty(callbacks["__redirect__"])){
+                    //     callbacks["__redirect__"](send,_message,this);
+                    // }
+
                 }
             }catch (e){
                 console.info(e);
