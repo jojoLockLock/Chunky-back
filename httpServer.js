@@ -25,6 +25,14 @@ const isOpenUrl=(ctx)=>{
             return Object.is(method,"POST");
         case "/":
             return Object.is(method,"GET");
+        case "/static/index.css":
+            return Object.is(method,"GET");
+        case "/static/index.js":
+            return Object.is(method,"GET");
+        case "/routes/error.async.js":
+            return Object.is(method,"GET");
+        case "/routes/home.async.js":
+            return Object.is(method,"GET");
         default:
             return false;
     }

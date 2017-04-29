@@ -2,21 +2,67 @@
  * Created by jojo on 2017/4/27.
  */
 const router=require('koa-router')();
-
+let fs = require("fs");
+let path = require('path');
 const operation=require('../db/Operations');
 const utils=require('../utils');
 const {isEmpty} = utils;
 const {loginVerify,getToken,getUserData,getUserAddressList,delToken}=operation;
 router.get('/', async (ctx, next) => {
-    ctx.response.body = `<h1>Hello World</h1>`;
+    let path="/static/index.html";
+    await getFile(path)
+        .then(result=>{
+            let type = path.substr(path.lastIndexOf(".")+1,path.length);
+            ctx.set({
+                "Content-Type":`text/${type};charset=UTF-8`
+            });
+            ctx.response.body=result;
+        })
 });
-router.get('/hello/:name',async(ctx,next)=>{
-    let name=ctx.params.name;
-    ctx.response.body=`<h1>Hello ,${name}</h1>`;
+router.get('/routes/:name',async(ctx,next)=>{
+    let path=ctx.url;
+
+    await getFile("/static"+path)
+        .then(result=>{
+            let type = path.substr(path.lastIndexOf(".")+1,path.length);
+            ctx.set({
+                "Content-Type":`text/${type};charset=UTF-8`
+            });
+            ctx.response.body=result;
+        })
 });
+router.get('/static/:name',async(ctx,next)=>{
+    let path=ctx.url;
+
+    await getFile(path)
+        .then(result=>{
+            let type = path.substr(path.lastIndexOf(".")+1,path.length);
+            ctx.set({
+                "Content-Type":`text/${type};charset=UTF-8`
+            });
+            ctx.response.body=result;
+        })
+});
+function getFile(path){
+    return new Promise((resolve,reject)=>{
+        path = process.cwd()+path;
+        console.info(path);
+        fs.readFile(path,function(err,stdout,stderr){
+            if(!err){
+
+                //在这里设置文件类型，告诉浏览器解析方式
+                resolve(stdout.toString())
+            }else{
+                reject(err);
+            }
+
+        })
+    })
+}
 
 router.post('/api/login',async(ctx,next)=>{
     const body=ctx.request.body;
+    console.info(body);
     const {userAccount,userPassword}=body;
     if(isEmpty([userAccount,userPassword])){
         ctx.response.body={

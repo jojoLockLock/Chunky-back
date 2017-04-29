@@ -44,10 +44,12 @@ userSchema.statics.isExist=function (userAccount) {
 
             if(err){
                 reject(err);
+            }else{
+                Object.is(users.length,0)
+                    ?resolve({isExist:false})
+                    :resolve({isExist:true,target:users[0]});
             }
-            Object.is(users.length,0)
-                ?resolve({isExist:false})
-                :resolve({isExist:true,target:users[0]});
+
 
         })
     })
@@ -65,10 +67,12 @@ addressListSchema.statics.isExist=function (userAccount) {
         this.find({userAccount}).exec((err,al)=>{
             if(err){
                 reject(err);
+            }else{
+                Object.is(al.length,0)
+                    ?resolve({isExist:false})
+                    :resolve({isExist:true,target:al[0]});
             }
-            Object.is(al.length,0)
-                ?resolve({isExist:false})
-                :resolve({isExist:true,target:al[0]});
+
 
         })
     })
@@ -127,16 +131,21 @@ chatRecordSchema.statics.isExist=function (beforeAccount,afterAccount) {
 
         checkArguments(arguments);
 
+
+
         this.find({$or:[
             {beforeAccount:beforeAccount,afterAccount:afterAccount},
             {afterAccount:beforeAccount,beforeAccount:afterAccount}
         ]}).exec((err,cr)=>{
             if(err){
-                reject(err);
+                reject(err)
+
+            }else{
+                Object.is(cr.length,0)
+                    ?resolve({isExist:false})
+                    :resolve({isExist:true,target:cr[0]});
             }
-            Object.is(cr.length,0)
-                ?resolve({isExist:false})
-                :resolve({isExist:true,target:cr[0]});
+
 
         })
     })

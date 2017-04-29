@@ -71,7 +71,7 @@ const boardCastController=(send,message,mc)=>{
         .then(()=>{
             if(targetAccount in conList){
                 conList[targetAccount].send(getJsonMessage({
-                    type:"boardCast",
+                    type:"newMessage",
                     senderAccount:userAccount,
                     content,
                 }));
