@@ -7,7 +7,7 @@ let path = require('path');
 const operation=require('../db/Operations');
 const utils=require('../utils');
 const {isEmpty} = utils;
-const {loginVerify,getToken,getUserData,getUserAddressList,delToken}=operation;
+const {loginVerify,getToken,getUserData,getUserAddressList,delToken,getChatRecord}=operation;
 router.get('/', async (ctx, next) => {
     let path="/static/index.html";
     await getFile(path)
@@ -62,7 +62,6 @@ function getFile(path){
 
 router.post('/api/login',async(ctx,next)=>{
     const body=ctx.request.body;
-    console.info(body);
     const {userAccount,userPassword}=body;
     if(isEmpty([userAccount,userPassword])){
         ctx.response.body={
@@ -104,7 +103,69 @@ router.post("/api/auth",async(ctx,next)=>{
    }
 });
 
-
+router.post("/api/chatrecords",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {userAccount,targetAccount}=body;
+    if(isEmpty([userAccount,targetAccount])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount token and targetAccount",
+        }
+    }else{
+        await getChatRecord(userAccount,targetAccount)
+            .then(result=>{
+                ctx.response.body={
+                    status:1,
+                    message:"get chat records success",
+                    chatRecords:result
+                }
+            })
+            .catch(err=>{
+                ctx.response.body={
+                    status:-1,
+                    message:err.message
+                }
+            })
+    }
+});
+router.post("/api/chatrecords/all",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {userAccount}=body;
+    if(isEmpty([userAccount])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount",
+        }
+    }else{
+        let alAccount=[];
+        await getUserAddressList(userAccount)
+            .then(addressList=>{
+                let promiseArr=[];
+                addressList.forEach(item=>{
+                    alAccount.push(item.userAccount);
+                    promiseArr.push(getChatRecord(userAccount,item.userAccount));
+                });
+                return Promise.all(promiseArr);
+            })
+            .then(result=>{
+                let chatRecords={};
+                alAccount.forEach((account,index)=>{
+                    chatRecords[account]=result[index];
+                });
+                ctx.response.body={
+                    status:1,
+                    message:"get chat records success",
+                    chatRecords,
+                }
+            })
+            .catch(err=>{
+                ctx.response.body={
+                    status:-1,
+                    message:err.message
+                }
+            })
+    }
+});
 router.post("/api/logout",async(ctx,next)=>{
     const body=ctx.request.body;
     const {userAccount}=body;
