@@ -1,2 +1,9 @@
 node_modules
-/log
+
+
+# production
+/dist
+.idea
+log
+
+*.txt

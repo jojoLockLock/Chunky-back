@@ -105,20 +105,23 @@ router.post("/api/auth",async(ctx,next)=>{
 
 router.post("/api/chatrecords",async(ctx,next)=>{
     const body=ctx.request.body;
-    const {userAccount,targetAccount}=body;
-    if(isEmpty([userAccount,targetAccount])){
+    const {userAccount,targetAccount,current}=body;
+    if(isEmpty([userAccount,targetAccount,current])){
         ctx.response.body={
             status:-1,
-            message:"please offer userAccount token and targetAccount",
+            message:"please offer userAccount token  targetAccount and current",
         }
     }else{
+        const selectLength=3;
         await getChatRecord(userAccount,targetAccount)
             .then(result=>{
+                const totalLength=result.length;
                 ctx.response.body={
                     status:1,
                     message:"get chat records success",
-                    chatRecords:result
-                }
+                    chatRecords:fetchChatRecords(selectLength,current,result)
+                };
+
             })
             .catch(err=>{
                 ctx.response.body={
@@ -128,7 +131,31 @@ router.post("/api/chatrecords",async(ctx,next)=>{
             })
     }
 });
-router.post("/api/chatrecords/all",async(ctx,next)=>{
+//用来筛选...
+function fetchChatRecords(selectLength,current,result) {
+    const totalLength=result.length;
+    if(totalLength-current<=0){
+        return [];
+    }
+    if(totalLength-current>=selectLength){
+        return result.slice(totalLength-current-selectLength,totalLength-current);
+    }
+    if(totalLength-current<selectLength){
+        return result.slice(0,totalLength-current);
+    }
+    // if(current<totalLength){
+    //     return result.slice(totalLength-selectLength);
+    // }
+    // if(totalLength-current<=0){
+    //     return [];
+    // }
+    // if(totalLength-current>=selectLength){
+    //     return result.slice(current-selectLength,current);
+    // }
+    // return result.slice(0,totalLength-current);
+
+}
+router.post("/api/chatrecordsall",async(ctx,next)=>{
     const body=ctx.request.body;
     const {userAccount}=body;
     if(isEmpty([userAccount])){
@@ -138,6 +165,8 @@ router.post("/api/chatrecords/all",async(ctx,next)=>{
         }
     }else{
         let alAccount=[];
+        const selectLength=15;
+        const current=0;
         await getUserAddressList(userAccount)
             .then(addressList=>{
                 let promiseArr=[];
@@ -150,7 +179,8 @@ router.post("/api/chatrecords/all",async(ctx,next)=>{
             .then(result=>{
                 let chatRecords={};
                 alAccount.forEach((account,index)=>{
-                    chatRecords[account]=result[index];
+                    console.info(result[index].length);
+                    chatRecords[account]=fetchChatRecords(selectLength,current,result[index]);
                 });
                 ctx.response.body={
                     status:1,
