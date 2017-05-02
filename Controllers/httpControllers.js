@@ -13,8 +13,9 @@ router.get('/', async (ctx, next) => {
     await getFile(path)
         .then(result=>{
             let type = path.substr(path.lastIndexOf(".")+1,path.length);
+
             ctx.set({
-                "Content-Type":`text/${type};charset=UTF-8`
+                "Content-Type":`text/${type};charset=UTF-8`,
             });
             ctx.response.body=result;
         })
@@ -25,10 +26,20 @@ router.get('/routes/:name',async(ctx,next)=>{
     await getFile("/static"+path)
         .then(result=>{
             let type = path.substr(path.lastIndexOf(".")+1,path.length);
+
+
             ctx.set({
-                "Content-Type":`text/${type};charset=UTF-8`
+                "Content-Type":`text/${type};charset=UTF-8`,
+                "Last-Modified":path,
             });
-            ctx.response.body=result;
+
+            if(Object.is(ctx.header["if-modified-since"],path)){
+                ctx.response.status=304;
+                ctx.response.body="";
+            }else{
+                ctx.response.status=200;
+                ctx.response.body=result;
+            }
         })
 });
 router.get('/static/:name',async(ctx,next)=>{
@@ -37,10 +48,21 @@ router.get('/static/:name',async(ctx,next)=>{
     await getFile(path)
         .then(result=>{
             let type = path.substr(path.lastIndexOf(".")+1,path.length);
+
             ctx.set({
-                "Content-Type":`text/${type};charset=UTF-8`
+                "Content-Type":`text/${type};charset=UTF-8`,
+                "Last-Modified":path,
             });
-            ctx.response.body=result;
+
+            if(Object.is(ctx.header["if-modified-since"],path)){
+                ctx.response.status=304;
+                ctx.response.body="";
+            }else{
+                ctx.response.status=200;
+                ctx.response.body=result;
+            }
+
+
         })
 });
 function getFile(path){
@@ -112,10 +134,9 @@ router.post("/api/chatrecords",async(ctx,next)=>{
             message:"please offer userAccount token  targetAccount and current",
         }
     }else{
-        const selectLength=3;
+        const selectLength=15;
         await getChatRecord(userAccount,targetAccount)
             .then(result=>{
-                const totalLength=result.length;
                 ctx.response.body={
                     status:1,
                     message:"get chat records success",
@@ -143,16 +164,7 @@ function fetchChatRecords(selectLength,current,result) {
     if(totalLength-current<selectLength){
         return result.slice(0,totalLength-current);
     }
-    // if(current<totalLength){
-    //     return result.slice(totalLength-selectLength);
-    // }
-    // if(totalLength-current<=0){
-    //     return [];
-    // }
-    // if(totalLength-current>=selectLength){
-    //     return result.slice(current-selectLength,current);
-    // }
-    // return result.slice(0,totalLength-current);
+
 
 }
 router.post("/api/chatrecordsall",async(ctx,next)=>{

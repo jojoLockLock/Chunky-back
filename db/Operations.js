@@ -42,6 +42,7 @@ function createUser(userAccount,userPassword,userName){
     })
 }
 
+
 //创建通讯录
 function createAddressList(user) {
 
@@ -177,16 +178,7 @@ function addChatRecord(beforeAccount,afterAccount,senderAccount,content) {
         })
     })
 }
-// addChatRecord("2","1","2","fuck").then(()=>{
-//     console.info('success')
-// }).catch(err=>{
-//     console.info(err);
-// });
-// ChatRecord.isExist("2","1").then((result)=>{
-//     console.info(result);
-// }).catch(e=>{
-//     console.info(e);
-// })
+
 
 //获得聊天记录
 function getChatRecord(beforeAccount,afterAccount) {
@@ -207,7 +199,7 @@ function getChatRecord(beforeAccount,afterAccount) {
                     return {
                         senderAccount,
                         content,
-                        date:date.toString()
+                        date:date.getTime()
                     }
                 });
                 resolve(records);

@@ -8,17 +8,11 @@ const serverLogPath=path.join(__dirname,"./log/webServerLog.txt");
 const dbLogPath=path.join(__dirname,"./log/dbLog.txt");
 function getWriteLog(path){
     return (content)=>{
-        fs.readFile(path,function (err,bytesRead) {
+        fs.appendFile(path,` ${new Date().toLocaleString()} | ${content} \n`, function (err) {
             if(err){
                 throw err;
             }
-            fs.writeFile(path,`${bytesRead.toString()}  ${new Date().toLocaleString()} | ${content} \n`, function (err) {
-                if(err){
-                    throw err;
-                }
-            });
-
-        })
+        });
     }
 }
 
