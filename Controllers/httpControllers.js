@@ -6,8 +6,9 @@ let fs = require("fs");
 let path = require('path');
 const operation=require('../db/Operations');
 const utils=require('../utils');
+const secret=require('../config/Secret');
 const {isEmpty} = utils;
-const {loginVerify,getToken,getUserData,getUserAddressList,delToken,getChatRecord}=operation;
+const {loginVerify,getToken,getUserData,getUserAddressList,delToken,getChatRecord,createUser}=operation;
 router.get('/', async (ctx, next) => {
     let path="/static/index.html";
     await getFile(path)
@@ -206,6 +207,37 @@ router.post("/api/chatrecordsall",async(ctx,next)=>{
                     message:err.message
                 }
             })
+    }
+});
+router.post("/api/register",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {userAccount,userPassword,userName,invitationCode}=body;
+    if(isEmpty([userAccount,userPassword,userName,invitationCode])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount",
+        }
+    }else{
+        if(!Object.is(secret.invitationCode,invitationCode)){
+            ctx.response.body={
+                status:-1,
+                message:"invitationCode error"
+            }
+        }else{
+            await createUser(userAccount,userPassword,userName)
+                .then(result=>{
+                    ctx.response.body={
+                        status:1,
+                        message:"register user success"
+                    }
+                }).catch(err=>{
+                    ctx.response.body={
+                        status:-1,
+                        message:err.message
+                    }
+                })
+        }
+
     }
 });
 router.post("/api/logout",async(ctx,next)=>{
