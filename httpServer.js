@@ -25,16 +25,16 @@ const isOpenUrl=(ctx)=>{
             return Object.is(method,"POST");
         case "/":
             return Object.is(method,"GET");
-        case "/static/index.css":
-            return Object.is(method,"GET");
-        case "/static/index.js":
-            return Object.is(method,"GET");
-        case "/routes/error.async.js":
-            return Object.is(method,"GET");
-        case "/routes/home.async.js":
-            return Object.is(method,"GET");
+        // case "/static/index.css":
+        //     return Object.is(method,"GET");
+        // case "/static/index.js":
+        //     return Object.is(method,"GET");
+        // case "/routes/error.async.js":
+        //     return Object.is(method,"GET");
+        // case "/routes/home.async.js":
+        //     return Object.is(method,"GET");
         default:
-            return false;
+            return Object.is(method,"GET");
     }
 };
 const isAuth=(ctx)=>{
@@ -69,6 +69,6 @@ module.exports={
 
         app.use(router.routes());
         //返回sever对象
-        return app.listen(3000);
+        return app.listen(port);
     }
 };
