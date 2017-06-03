@@ -3,7 +3,7 @@
  */
 
 const Collections=require('./Collections');
-const {User,ChatRecord,AddressList}=Collections;
+const {User,ChatRecord,AddressList,AddressListNotification}=Collections;
 const utils=require('../utils');
 const {isEmpty,checkArguments,getError}=utils;
 const {errorType}=require("../config/ErrorConfig");
@@ -294,6 +294,159 @@ function getUserAddressList(userAccount) {
 }
 
 
+//创建通讯录请求信息列表
+function createAddressListNotification(userAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        AddressListNotification.isExist(userAccount)
+        //判断通讯录请求信息列表是否已经存在
+            .then(result=>{
+                if(result.isExist){
+                    throw getError(`AddressListNotification for ${userAccount} have exist`
+                        ,errorType.ADDRESS_NOTIFICATION_EXIST)
+                }else{
+                    const newAddressListNotification=new AddressListNotification({
+                        userAccount
+                    });
+                    return newAddressListNotification.save();
+                }
+            })
+            //创建成功
+            .then(()=>{
+                resolve();
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+
+//添加到通讯录请求信息列表 userAccount为接受请求方 /targetAccount 为发起请求方
+function addToAddressListNotification(userAccount,targetAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        AddressListNotification.isExist(userAccount)
+            .then(result=>{
+                if(result.isExist){
+                    let target=result.target,
+                        _id=target._id,
+                        notifications=target.notifications,
+                        flag=-1;
+                    //查找是否已经发出过请求
+                    notifications.some((n,i)=>{
+                        if(n.targetAccount===targetAccount){
+                            flag=i;
+                            return true
+                        }
+                        return false;
+                    });
+                    //存在则不添加新的 将旧的请求resResult改为0 （未回复） /更新时间
+                    if(flag!==-1){
+                        notifications[flag].resResult=0;
+                        notifications[flag].date=Date.now();
+                        target.notifications=notifications;
+                        return target.save();
+                    }
+                    return AddressListNotification.update({_id},{$push:{notifications:{targetAccount,date:Date.now()}}});
+                }else{
+                    throw getError(`AddressListNotification for ${userAccount} have not exist`
+                        ,errorType.ADDRESS_NOTIFICATION_NOT_EXIST)
+                }
+            })
+            .then((result)=>{
+                resolve();
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+
+//修改 通讯录回复结果
+function setAddressListNotificationResponse(userAccount,targetAccount,resResult) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        // let notifications=[];
+        AddressListNotification.isExist(userAccount)
+        //判断通讯录请求信息列表是否已经存在
+            .then(result=>{
+                // console.info(result);
+                if(result.isExist){
+                    // let notifications=result.target.notifications;
+                    let target=result.target,
+                        _id=target._id,
+                        notifications=target.notifications,
+                        flag=-1;
+                    //查找是否已经发出过请求
+                    notifications.some((n,i)=>{
+                        if(n.targetAccount===targetAccount){
+                            flag=i;
+                            return true
+                        }
+                        return false;
+                    });
+                    if(flag===-1){
+                        throw getError(`AddressListNotification item for ${userAccount} with ${targetAccount} have not exist`
+                            ,errorType.ADDRESS_NOTIFICATION_ITEM_NOT_EXIST);
+                    }else{
+                        notifications[flag].resResult=resResult;
+                        // notifications[flag].date=Date.now();
+                        target.notifications=notifications;
+                        return target.save();
+                    }
+                }else{
+                    throw getError(`AddressListNotification for ${userAccount} have not exist`
+                        ,errorType.ADDRESS_NOTIFICATION_NOT_EXIST);
+                }
+            })
+            //获取成功
+            .then((result)=>{
+                resolve()
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+//获取通讯录通知信息
+function getAddressListNotification(userAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        let notifications=[];
+        AddressListNotification.isExist(userAccount)
+        //判断通讯录请求信息列表是否已经存在
+            .then(result=>{
+                if(result.isExist){
+                    notifications=result.target.notifications;
+                    return Promise.all(notifications.map(n=>{
+                        const {targetAccount}=n;
+                        return getUserData(targetAccount)
+
+                    }));
+                }else{
+                    throw getError(`AddressListNotification for ${userAccount} have not exist`
+                        ,errorType.ADDRESS_NOTIFICATION_NOT_EXIST);
+                }
+            })
+            //获取成功
+            .then((result)=>{
+                resolve(result.map((u,i)=>{
+                    const {userAccount,userName}=u;
+                    const {date,resResult}=notifications[i];
+                    return {
+                        date:date.getTime(),
+                        targetAccount:userAccount,
+                        userName,
+                        resResult
+                    }
+                }))
+            })
+            .catch(err=>{
+                reject(err);
+            })
+    })
+}
+
 const {getToken,isVerifyToken,delToken}=User;
 let isAccountExistInAddressList=AddressList.isAccountExistInAddressList.bind(AddressList);
 module.exports={
@@ -306,6 +459,10 @@ module.exports={
     loginVerify,
     addChatRecord,
     getChatRecord,
+    createAddressListNotification,
+    addToAddressListNotification,
+    getAddressListNotification,
+    setAddressListNotificationResponse,
     getToken,
     isVerifyToken,
     delToken,

@@ -1,6 +1,6 @@
 /**
  * Created by jojo on 2017/5/2.
  */
-modlue.exports={
+module.exports={
     invitationCode:"123456"
 };

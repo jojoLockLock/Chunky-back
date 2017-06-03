@@ -178,6 +178,7 @@ router.post("/api/chatrecordsall",async(ctx,next)=>{
         }
     }else{
         let alAccount=[];
+        //获取selectLength跳聊天记录
         const selectLength=15;
         const current=0;
         await getUserAddressList(userAccount)
@@ -192,7 +193,7 @@ router.post("/api/chatrecordsall",async(ctx,next)=>{
             .then(result=>{
                 let chatRecords={};
                 alAccount.forEach((account,index)=>{
-                    console.info(result[index].length);
+                    // console.info(result[index].length);
                     chatRecords[account]=fetchChatRecords(selectLength,current,result[index]);
                 });
                 ctx.response.body={
@@ -240,6 +241,118 @@ router.post("/api/register",async(ctx,next)=>{
 
     }
 });
+//发起添加到通讯录的请求，
+router.post("/api/addresslist/add",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {userAccount,targetAccount}=body;
+    if(isEmpty([userAccount,targetAccount])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount and targetAccount",
+        }
+    }else{
+        await operation.addToAddressListNotification(targetAccount,userAccount)
+            .then(result=>{
+                ctx.response.body={
+                    status:1,
+                    message:"add to addressList success"
+                }
+            }).catch(err=>{
+                ctx.response.body={
+                    status:-1,
+                    message:err.message
+                }
+            })
+    }
+});
+//回复添加到通讯录的请求，
+router.post("/api/addresslist/response",async(ctx,next)=>{
+    const body=ctx.request.body;
+    let {userAccount,targetAccount,resResult}=body;
+    resResult=parseInt(resResult);
+    if(isEmpty([userAccount,targetAccount,resResult])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount and targetAccount",
+        }
+    }else{
+        if(resResult!==1&&resResult!==-1){
+            ctx.response.body={
+                status:-1,
+                message:"addressList  response is error",
+            }
+        }else{
+            await operation.setAddressListNotificationResponse(userAccount,targetAccount,resResult)
+                .then(result=>{
+                    ctx.response.body={
+                        status:1,
+                        message:"response success"
+                    }
+                }).catch(err=>{
+                    ctx.response.body={
+                        status:-1,
+                        message:err.message
+                    }
+                })
+        }
+
+    }
+});
+//获取用户个人通知信息列表
+router.post("/api/notification",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {userAccount}=body;
+    if(isEmpty([userAccount])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer userAccount ",
+        }
+    }else{
+        //获得添加到通讯录的通知信息
+        await operation.getAddressListNotification(userAccount)
+            .then(result=>{
+                ctx.response.body={
+                    status:1,
+                    message:"add to addressList success",
+                    payload:{
+                        addressList:result
+                    },
+                }
+            }).catch(err=>{
+                ctx.response.body={
+                    status:-1,
+                    message:err.message
+                }
+            })
+    }
+});
+
+
+router.post("/api/user/query",async(ctx,next)=>{
+    const body=ctx.request.body;
+    const {targetAccount}=body;
+    if(isEmpty([targetAccount])){
+        ctx.response.body={
+            status:-1,
+            message:"please offer  targetAccount",
+        }
+    }else{
+        await operation.getUserData(targetAccount)
+            .then(result=>{
+                ctx.response.body={
+                    status:1,
+                    message:"query user success",
+                    payload:result,
+                }
+            }).catch(err=>{
+                ctx.response.body={
+                    status:-1,
+                    message:err.message
+                }
+            })
+    }
+});
+
 router.post("/api/logout",async(ctx,next)=>{
     const body=ctx.request.body;
     const {userAccount}=body;

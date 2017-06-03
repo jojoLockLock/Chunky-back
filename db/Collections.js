@@ -128,11 +128,7 @@ const chatRecordSchema=new Schema({
 //判断聊天记录是否已经存在
 chatRecordSchema.statics.isExist=function (beforeAccount,afterAccount) {
     return new Promise((resolve,reject)=>{
-
         checkArguments(arguments);
-
-
-
         this.find({$or:[
             {beforeAccount:beforeAccount,afterAccount:afterAccount},
             {afterAccount:beforeAccount,beforeAccount:afterAccount}
@@ -145,8 +141,33 @@ chatRecordSchema.statics.isExist=function (beforeAccount,afterAccount) {
                     ?resolve({isExist:false})
                     :resolve({isExist:true,target:cr[0]});
             }
-
-
+        })
+    })
+};
+//userAccount收到的添加通讯录请求通知
+const addressListNotificationSchema=new Schema({
+    userAccount:String,
+    notifications:[
+        {
+            targetAccount:String,
+            date:{type:Date,default:Date.now},
+            resResult:{type:Number,default:0}
+        }
+    ]
+    //回复结果 0表示未回复 1表示接受 -1表示拒绝
+});
+//判断userAccount的通讯录请求表是否存在
+addressListNotificationSchema.statics.isExist=function (userAccount) {
+    return new Promise((resolve,reject)=>{
+        checkArguments(arguments);
+        this.find({userAccount}).exec((err,alNotification)=>{
+            if(err){
+                reject(err);
+            }else{
+                Object.is(alNotification.length,0)
+                    ?resolve({isExist:false})
+                    :resolve({isExist:true,target:alNotification[0]});
+            }
         })
     })
 };
@@ -157,9 +178,10 @@ const AddressList=mongoose.model('AddressList',addressListSchema);
 
 const ChatRecord=mongoose.model('ChatRecord',chatRecordSchema);
 
-
+const AddressListNotification=mongoose.model('AddressListNotification',addressListNotificationSchema);
 module.exports={
     User,
     AddressList,
     ChatRecord,
+    AddressListNotification
 };

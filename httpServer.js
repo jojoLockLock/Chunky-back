@@ -25,6 +25,8 @@ const isOpenUrl=(ctx)=>{
             return Object.is(method,"POST");
         case "/":
             return Object.is(method,"GET");
+        case "/api/register":
+            return Object.is(method,"POST");
         // case "/static/index.css":
         //     return Object.is(method,"GET");
         // case "/static/index.js":
