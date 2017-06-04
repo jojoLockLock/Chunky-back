@@ -7,7 +7,7 @@ const WebSocketServer = WebSocket.Server;
 const utils=require('./utils');
 const {isEmpty,checkArguments}=utils;
 const socketControllers=require('./Controllers/socketControllers');
-const conList={};
+
 const getJsonMessage=(obj)=>{
     return JSON.stringify(obj);
 };
@@ -30,6 +30,8 @@ const getAuthTimer=(mc,second)=>{
 };
 
 const {authController,redirectController,boardCastController}=socketControllers;
+//所有的socket连接
+const conList={};
 module.exports={
     start:(server)=>{
         const wss = new WebSocketServer({
@@ -51,7 +53,9 @@ module.exports={
             mc.redirect(redirectController);
 
         });
-
+        return {
+            conList:conList,
+        }
     }
 };
 

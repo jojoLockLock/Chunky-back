@@ -58,7 +58,7 @@ const checkRequest=async (ctx,next)=>{
 };
 
 module.exports={
-    start:({port=3000})=>{
+    start:({port=3000,socket})=>{
         console.info(`http Server running in http://127.0.0.1:${port}`);
 
         //bodyParser 必须在router注册前
@@ -69,7 +69,7 @@ module.exports={
         app.use(checkRequest);
 
 
-        app.use(router.routes());
+        app.use(router.getRouter(socket).routes());
         //返回sever对象
         return app.listen(port);
     }

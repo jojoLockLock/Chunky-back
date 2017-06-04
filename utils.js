@@ -29,8 +29,13 @@ const getError=(message,type)=>{
     return error;
 };
 
+const getJsonMessage=(obj)=>{
+    return JSON.stringify(obj);
+};
+
 module.exports={
     isEmpty,
     checkArguments,
     getError,
+    getJsonMessage
 };
