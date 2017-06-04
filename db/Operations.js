@@ -31,7 +31,10 @@ function createUser(userAccount,userPassword,userName){
             .then(user=>{
                 return createAddressList(user)
             })
-            //创建新的通讯录成功
+            //创建新的通讯录成功后 添加通讯录请求通知表
+            .then(()=>{
+                return createAddressListNotification(userAccount);
+            })
             .then(()=>{
                 resolve();
             })
@@ -354,6 +357,7 @@ function addToAddressListNotification(userAccount,targetAccount) {
                 }
             })
             .then((result)=>{
+                console.info(result);
                 resolve();
             })
             .catch(err=>{

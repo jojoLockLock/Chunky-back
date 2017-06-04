@@ -10,6 +10,7 @@ const secret=require('../config/Secret');
 const {isEmpty,getJsonMessage} = utils;
 const {loginVerify,getToken,getUserData,getUserAddressList,delToken,getChatRecord,createUser}=operation;
 function getRouter(socket) {
+
     router.get('/', async (ctx, next) => {
         let path="/static/index.html";
         await getFile(path)
@@ -28,13 +29,10 @@ function getRouter(socket) {
         await getFile("/static"+path)
             .then(result=>{
                 let type = path.substr(path.lastIndexOf(".")+1,path.length);
-
-
                 ctx.set({
                     "Content-Type":`text/${type};charset=UTF-8`,
                     "Last-Modified":path,
                 });
-
                 if(Object.is(ctx.header["if-modified-since"],path)){
                     ctx.response.status=304;
                     ctx.response.body="";
@@ -104,12 +102,14 @@ function getRouter(socket) {
                     const addressList=result[1];
                     ctx.response.body= {
                         message:"login success",
-                        token:getToken(userAccount),
-                        userData:{
-                            userName:userData.userName
-                        },
-                        addressList,
                         status:1,
+                        payload:{
+                            token:getToken(userAccount),
+                            userData:{
+                                userName:userData.userName
+                            },
+                            addressList,
+                        }
                     }
                 })
                 .catch(err=>{
@@ -143,7 +143,7 @@ function getRouter(socket) {
                     ctx.response.body={
                         status:1,
                         message:"get chat records success",
-                        chatRecords:fetchChatRecords(selectLength,current,result)
+                        payload:fetchChatRecords(selectLength,current,result),
                     };
 
                 })
@@ -201,7 +201,7 @@ function getRouter(socket) {
                     ctx.response.body={
                         status:1,
                         message:"get chat records success",
-                        chatRecords,
+                        payload:chatRecords
                     }
                 })
                 .catch(err=>{
@@ -218,7 +218,7 @@ function getRouter(socket) {
         if(isEmpty([userAccount,userPassword,userName,invitationCode])){
             ctx.response.body={
                 status:-1,
-                message:"please offer userAccount",
+                message:"not full filed for register",
             }
         }else{
             if(!Object.is(secret.invitationCode,invitationCode)){
@@ -255,6 +255,21 @@ function getRouter(socket) {
         }else{
             await operation.addToAddressListNotification(targetAccount,userAccount)
                 .then(result=>{
+                    //用户若在线 发送推送通知
+                    const {connectionList}=socket;
+
+                    if(targetAccount in connectionList){
+                        console.info("in line");
+                        connectionList[targetAccount].send(getJsonMessage({
+                            type:"notification/addresslist",
+                            message:"new addresslist request",
+                            payload:{
+                                resResult:0,
+                                targetAccount:userAccount,
+                                date:new Date().getTime(),
+                            }
+                        }))
+                    }
                     ctx.response.body={
                         status:1,
                         message:"add to addressList success"
@@ -286,6 +301,7 @@ function getRouter(socket) {
             }else{
                 await operation.setAddressListNotificationResponse(userAccount,targetAccount,resResult)
                     .then(result=>{
+                        connectionList()
                         ctx.response.body={
                             status:1,
                             message:"response success"
@@ -315,7 +331,7 @@ function getRouter(socket) {
                 .then(result=>{
                     ctx.response.body={
                         status:1,
-                        message:"add to addressList success",
+                        message:"get notification success",
                         payload:{
                             addressList:result
                         },

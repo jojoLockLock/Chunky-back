@@ -45,7 +45,6 @@ module.exports={
 
 
             const mc=new MessageControllers(ws,conList);
-
             //x秒未校验身份则断开连接；
             // const authTimer=getAuthTimer(mc,10);
             mc.add('auth',authController);
