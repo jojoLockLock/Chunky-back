@@ -1,5 +1,5 @@
 /**
- * Created by JoJo on 2017/4/9.
+ * Created by 13944 on 2017/6/14.
  */
 const ErrorConfig=require('./config/ErrorConfig');
 const {errorType}=ErrorConfig;

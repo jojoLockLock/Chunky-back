@@ -1,36 +1,15 @@
 {
-  "name": "chunky-back",
+  "name": "chunky-server-remodel",
   "version": "1.0.0",
-  "description": "\"chunky server\"",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node App.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jojoLockLock/Chunky-back.git"
-  },
-  "keywords": [
-    "chunky"
-  ],
-  "author": "jojoLockLock",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jojoLockLock/Chunky-back/issues"
-  },
-  "homepage": "https://github.com/jojoLockLock/Chunky-back#readme",
   "dependencies": {
-    "jsonwebtoken": "^7.4.0",
-    "koa": "^2.2.0",
-    "koa-bodyparser": "^4.2.0",
-    "koa-router": "^7.1.1",
-    "mongoose": "^4.9.6",
-    "nodejs-websocket": "^1.7.1",
-    "ws": "^2.3.1"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-preset-es2015": "^6.24.1"
+    "mongoose": "^4.10.6"
   }
 }

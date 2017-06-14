@@ -1,10 +1,2 @@
-node_modules
-
-
-# production
-/dist
-.idea
-static
-log
-
-*.txt
+/.idea
+/node_modules
