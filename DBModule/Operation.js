@@ -29,7 +29,30 @@ function createUser({userAccount="",userName="",userPassword=""}) {
     })
 }
 
-// createUser({userAccount:"123!!2222222222",userPassword:"123",userName:"123123"}).then((result)=>{
-//
-//
-// });
+function becomeFriends(firstUserAccount,secondUserAccount) {
+    return Promise.all([
+        User.isExist(firstUserAccount),
+        User.isExist(secondUserAccount)
+    ]).then((result)=>{
+
+        const [firstResult,secondResult]=result;
+
+        if(firstResult.isExist&&secondResult.isExist){
+            const firstTarget=firstResult.target;
+            const secondTarget=secondResult.target;
+            return Promise.all([
+                firstTarget.addToFriendList(secondTarget._id),
+                secondTarget.addToFriendList(firstTarget._id)
+            ])
+        }else{
+            throw Error("add to friend list fail")
+        }
+    }).then(result=>{
+        return result;
+    })
+}
+
+becomeFriends("tester1",'tester2').catch(err=>{
+    console.info(err.message,'xxx');
+});
+

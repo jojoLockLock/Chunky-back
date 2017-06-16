@@ -14,7 +14,7 @@ const userSchema=new Schema({
     icon:{type:String,default:""},
     status:{type:Number,default:0},
     isFreeze:{type:Boolean,default:false},
-    friends:[
+    friendList:[
         {
             //好友的_id
             type:Schema.ObjectId,
@@ -49,9 +49,30 @@ userSchema.statics.isExist=function (userAccount="") {
 userSchema.methods.getLoginData=function () {
   return {
       userName:this.userName,
+      _id:this._id,
       addressList:this.addressList,
       addressListNotifications:this.addressListNotifications
   }
+};
+
+userSchema.methods.addToFriendList=function (userId) {
+
+
+    return new Promise((resolve,reject)=>{
+        if(this.friendList.some(i=>i.toString()===userId.toString())){
+            resolve()
+        }else{
+            this.friendList.push(userId);
+            this.save((err,result)=>{
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(result);
+                }
+            })
+        }
+
+    })
 };
 const chatRecordItemSchema=new Schema({
     from:{type:String,required:'{PATH} is required!'},
@@ -69,10 +90,6 @@ const User=mongoose.model("User",userSchema);
 const ChatRecord=mongoose.model("ChatRecord",chatRecordSchema);
 const ChatRecordItem=mongoose.model("ChatRecordItem",chatRecordItemSchema);
 
-c.save((err,result)=>{
-    console.info(err);
-    console.info(result);
-});
 
 module.exports={
   User
