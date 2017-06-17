@@ -2,7 +2,7 @@
  * Created by 13944 on 2017/6/14.
  */
 const mongoose=require('mongoose');
-db=mongoose.connection;
+const db=mongoose.connection;
 
 db.on('connecting', ()=>{
     let msg='db connecting...';
