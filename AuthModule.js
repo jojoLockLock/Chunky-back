@@ -3,24 +3,36 @@
  */
 import moment from 'moment';
 import jwt from  'jwt-simple';
-import {AppConfig} from './Config/AppConfig';
-
-const token=jwt.encode({
-    iss:"123456",
-    exp:AppConfig.tokenExpires
-},AppConfig.secretKey);
+import {AppConfig,tokenExpiresHours} from './Config/AppConfig';
 
 
-console.info(token);
+export const tokenList={};
 
+export function getToken(userAccount) {
 
-const result=jwt.decode(token,AppConfig.secretKey);
+	const iss=`${userAccount}#${Math.random()}`
+	
+	tokenList[userAccount]=iss;
 
-console.info(result);
-
-
-export function getToken(userAccount,) {
     return jwt.encode({
-        iss:`${userAccount}#${Math.getRandom()}`
-    })
+        iss,
+        exp:AppConfig.tokenExpires
+    },AppConfig.secretKey);
+
+}
+
+
+export function verifyToken(token){
+
+	const result=jwt.decode(token,AppConfig.secretKey);
+	const userAccount=result.iss.split('#')[0];
+
+	if(tokenList[userAccount]!==result.iss){
+		throw new Error("token is not true");
+	}
+	if(result.exp<=new Date().getTime()){
+		throw new Error("token is overdue");
+	}
+	return userAccount;
+
 }
