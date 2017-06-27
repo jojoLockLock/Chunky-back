@@ -4,6 +4,7 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import httpControllers from './httpControllers';
+import {getToken,verifyToken} from '../AuthModule';
 const app=new Koa();
 
 const printTime= async (ctx,next)=>{
@@ -14,11 +15,59 @@ const printTime= async (ctx,next)=>{
 };
 
 
+const isOpenUrl = async (ctx)=>{
+    const {method,url}=ctx;
 
-app.use(bodyParser());
+    switch (url){
+        case "/api/login":
+            return Object.is(method,"GET");
+        case "/":
+            return Object.is(method,"GET");
+        default:
+            return false;
+    }
+};
 
-app.use(printTime);
+const isAuth=(ctx)=>{
 
-app.use(httpControllers.routes());
+    try{
+        const {token}=ctx.request.body;
 
-app.listen(3000);
+        const userAccount= verifyToken(token);
+
+        ctx.request.body={
+            payload:{...ctx.request.body},
+            userAccount
+        };
+        return true;
+    }catch(e){
+
+        return false;
+    }
+};
+
+const filterReq= async (ctx,next)=>{
+    if(isOpenUrl(ctx)||isAuth(ctx)){
+        await next();
+    }else{
+        ctx.response.body={
+            message:"is wrong",
+            status:-1
+        }
+    }
+};
+
+export default function ({port}={port:3000}) {
+
+    app.use(bodyParser());
+
+    app.use(printTime);
+
+    app.user(filterReq);
+
+    app.use(httpControllers.routes());
+
+    console.info(`http server running on port:${port}`);
+
+    return app.listen(port);
+};
