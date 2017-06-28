@@ -29,7 +29,6 @@ export default function (server) {
     const socketConList={};
     wss.on("connection",(ws)=>{
         if(!isAuth(ws)){
-            console.info(".....");
             ws.close();
         }
 

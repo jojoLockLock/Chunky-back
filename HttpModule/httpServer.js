@@ -8,17 +8,21 @@ import {getToken,verifyToken} from '../AuthModule';
 const app=new Koa();
 
 const printTime= async (ctx,next)=>{
+
     const start=new Date().getTime();
+
     await next();
+
     const ms=new Date().getTime()-start;
+
     console.info(`${ctx.request.method} ${ctx.request.url} Time ${ms}ms`);
 };
 
 
-const isOpenUrl = async (ctx)=>{
-    const {method,url}=ctx;
+const isOpenUrl = (ctx)=>{
+    const {method,path}=ctx;
 
-    switch (url){
+    switch (path){
         case "/api/login":
             return Object.is(method,"GET");
         case "/":
@@ -35,11 +39,12 @@ const isAuth=(ctx)=>{
 
         const userAccount= verifyToken(token);
 
-        ctx.request.body={
-            payload:{...ctx.request.body},
+        ctx.state={
             userAccount
         };
+
         return true;
+
     }catch(e){
 
         return false;
@@ -47,9 +52,13 @@ const isAuth=(ctx)=>{
 };
 
 const filterReq= async (ctx,next)=>{
+
     if(isOpenUrl(ctx)||isAuth(ctx)){
+
         await next();
+
     }else{
+
         ctx.response.body={
             message:"is wrong",
             status:-1
@@ -63,7 +72,7 @@ export default function ({port}={port:3000}) {
 
     app.use(printTime);
 
-    app.user(filterReq);
+    app.use(filterReq);
 
     app.use(httpControllers.routes());
 

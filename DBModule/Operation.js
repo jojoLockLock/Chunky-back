@@ -151,26 +151,36 @@ function getUserPublicData(userAccount) {
 }
 //
 function getUserLoginData(userAccount) {
+    let userData=null;
     return User.isExist(userAccount)
         .then(result=>{
+
             if(result.isExist){
                 return result.target.getLoginData();
             }else{
                 throw new Error(`userAccount:${userAccount} is exist`);
             }
+
         }).then(result=>{
-            result.friendList=result.friendList.map(f=>getUserPublicData(f));
-            return result;
-    })
+
+            userData=result;
+            return Promise.all(result.friendList.map(f=>getUserPublicData(f)));
+
+        }).then(result=>{
+
+            userData.friendList=result;
+            return userData;
+        })
 }
 //
 function userLogin(userAccount,userPassword) {
+    console.info(userAccount,userPassword);
     return User.isExist(userAccount)
         .then(result=>{
             if(result.isExist){
                 return result.target.verifyPassword(userPassword);
             }else{
-                throw new Error(`userAccount:${userAccount} is exist`);
+                throw new Error(`userAccount:${userAccount} is not exist`);
             }
         }).then(result=>{
             if(result){
@@ -213,7 +223,8 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
 // });
 
 
-module.export={
+
+export default {
     createUser,
     becomeFriendsAndCreateChatRecords,
     createChatRecordItemAndAddToChatRecords,
@@ -222,4 +233,4 @@ module.export={
     askMakeFriendsRequest,
     userLogin,
     getChatRecords,
-};
+}
