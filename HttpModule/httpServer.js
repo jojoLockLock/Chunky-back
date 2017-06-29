@@ -27,6 +27,8 @@ const isOpenUrl = (ctx)=>{
             return Object.is(method,"GET");
         case "/":
             return Object.is(method,"GET");
+        case "/test":
+            return Object.is(method,"GET");
         default:
             return false;
     }
@@ -35,7 +37,8 @@ const isOpenUrl = (ctx)=>{
 const isAuth=(ctx)=>{
 
     try{
-        const {token}=ctx.request.body;
+
+        const token=ctx.request.body.token||ctx.header["access-token"];
 
         const userAccount= verifyToken(token);
 
@@ -46,7 +49,7 @@ const isAuth=(ctx)=>{
         return true;
 
     }catch(e){
-
+        console.info(e);
         return false;
     }
 };

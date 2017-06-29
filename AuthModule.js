@@ -10,7 +10,7 @@ export const tokenList={};
 
 export function getToken(userAccount) {
 
-	const iss=`${userAccount}#${Math.random()}`
+	const iss=`${userAccount}#${Math.random()}`;
 	
 	tokenList[userAccount]=iss;
 
@@ -36,3 +36,14 @@ export function verifyToken(token){
 	return userAccount;
 
 }
+
+export function delToken(token) {
+
+	const userAccount=verifyToken(token);
+
+	delete tokenList[userAccount];
+
+	return true;
+}
+
+

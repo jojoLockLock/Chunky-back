@@ -55,7 +55,7 @@ userSchema.statics.isExist=function (userAccount="") {
     })
 };
 
-userSchema.statics.queryUser=function (value,options) {
+userSchema.statics.queryUser=function (value,options={}) {
     return new Promise((resolve,reject)=>{
         this.find({$or:[
             {userAccount:{$regex:new RegExp(value)}},
@@ -175,11 +175,12 @@ chatRecordSchema.statics.isExist=function(firstUserAccount,secondUserAccount) {
             })
     })
 };
-//倒叙获取聊天记录
+//获取过去的聊天记录 limit为获得的条数 skip为开始查询的位置
 chatRecordSchema.methods.getChatRecordsData=function({limit=15,skip=0}={}) {
+    let length=this.records.length;
     return {
-        total:this.records.length,
-        data:this.records.slice(skip,skip+limit).map(i=>{
+        total:length,
+        data:this.records.slice(length-skip-limit,length-skip).map(i=>{
             const {from,to,activeDate,content,_id}=i;
             return {
                 from,

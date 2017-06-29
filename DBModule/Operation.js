@@ -109,6 +109,9 @@ function addChatRecordItems(firstUserAccount,secondUserAccount,items) {
 function createChatRecordItemAndAddToChatRecords({from,to,content}) {
     return addChatRecordItems(from,to,[createChatRecordItem({from,to,content})])
 }
+
+
+createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fucking test"});
 //
 function sendMakeFriendsRequest(userAccount,targetAccount) {
     return Promise.all([
@@ -128,7 +131,7 @@ function sendMakeFriendsRequest(userAccount,targetAccount) {
     })
 }
 //
-function askMakeFriendsRequest(userAccount,targetAccount,resCode=-1) {
+function resMakeFriendsRequest(userAccount,targetAccount,resCode=-1) {
     return User.isExist(userAccount)
         .then(result=>{
             if(result.isExist){
@@ -138,6 +141,7 @@ function askMakeFriendsRequest(userAccount,targetAccount,resCode=-1) {
             }
         })
 }
+
 //
 function getUserPublicData(userAccount) {
     return User.isExist(userAccount)
@@ -145,7 +149,7 @@ function getUserPublicData(userAccount) {
             if(result.isExist){
                 return result.target.getPublicData();
             }else{
-                throw new Error(`userAccount:${userAccount} is exist`);
+                throw new Error(`userAccount:${userAccount} is not exist`);
             }
         })
 }
@@ -158,7 +162,7 @@ function getUserLoginData(userAccount) {
             if(result.isExist){
                 return result.target.getLoginData();
             }else{
-                throw new Error(`userAccount:${userAccount} is exist`);
+                throw new Error(`userAccount:${userAccount} is not exist`);
             }
 
         }).then(result=>{
@@ -174,7 +178,6 @@ function getUserLoginData(userAccount) {
 }
 //
 function userLogin(userAccount,userPassword) {
-    console.info(userAccount,userPassword);
     return User.isExist(userAccount)
         .then(result=>{
             if(result.isExist){
@@ -230,7 +233,7 @@ export default {
     createChatRecordItemAndAddToChatRecords,
     queryUser,
     sendMakeFriendsRequest,
-    askMakeFriendsRequest,
+    resMakeFriendsRequest,
     userLogin,
     getChatRecords,
 }
