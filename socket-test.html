@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>socket</title>
+    <style>
+        .message-list{
+            border: 1px solid #cccccc;
+            height: 500px;
+            overflow: scroll;
+        }
+        .socket-url{
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+ <div>
+     <table>
+         <tbody>
+            <tr>
+                <td><label for="socket-url">socket:</label></td>
+                <td><input type="text" id="socket-url" class="socket-url" value="ws://127.0.0.1:3000">
+                    <button id="confirm">confirm</button>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="content">content:</label></td>
+                <td><input type="text" id="content" class="content" >
+                    <button id="send">send</button></td>
+            </tr>
+
+         </tbody>
+     </table>
+     <ul id="message-list" class="message-list">
+
+     </ul>
+ </div>
+ <script>
+     document.getElementById("confirm").addEventListener("click",function () {
+        connection();
+     });
+     let wsCon=null;
+    function connection() {
+        let socketUrl=document.getElementById("socket-url").value;
+        let ws = new WebSocket(socketUrl);
+        ws.onopen=function () {
+            console.info('open it');
+
+        };
+        ws.onmessage=function (e) {
+            try{
+                addMessageItem(e.data,'server');
+            }catch(e){
+                console.error(e);
+            }
+        };
+        wsCon=ws;
+
+    }
+    document.getElementById("send").addEventListener("click",function () {
+        sendMessage();
+    });
+    function sendMessage() {
+        let content=document.getElementById("content");
+        wsCon.send(content.value);
+        addMessageItem(content.value,'self');
+        content.value="";
+    }
+    let messageList=document.getElementById("message-list");
+    function addMessageItem(message,from) {
+        let li=document.createElement("li");
+        li.innerHTML=`From ${from} ${new Date().toString()}     :${message}`;
+        messageList.appendChild(li);
+    }
+
+ </script>
+</body>
+</html>

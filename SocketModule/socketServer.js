@@ -28,10 +28,12 @@ export default function (server) {
 
     const socketConList={};
     wss.on("connection",(ws)=>{
-        if(!isAuth(ws)){
-            ws.close();
-        }
-
+        // if(!isAuth(ws)){
+        //     ws.close();
+        // }
+        ws.on("message",function (message) {
+            console.info(message);
+        })
     });
 
     console.info(`socket server is running`);
