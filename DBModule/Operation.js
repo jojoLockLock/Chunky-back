@@ -205,6 +205,13 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
         })
 }
 
+createUser({
+    userAccount:"tester3",
+    userPassword:"xxx",
+    userName:"tester3"
+}).then(()=>{
+    console.info("success");
+});
 
 // createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
 //     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),

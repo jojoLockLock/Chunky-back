@@ -1,0 +1,7 @@
+{
+  "type":"boardCast",
+  "payload":{
+    "content":"xxxxxxx",
+    "to":"tester2"
+  }
+}

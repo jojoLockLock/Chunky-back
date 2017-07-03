@@ -4,6 +4,7 @@
 import koaRouter from 'koa-router';
 import operations from "../DBModule/Operation";
 import {getToken,delToken} from '../AuthModule';
+import {pushNotification} from '../SocketModule/socketServer';
 const {
     userLogin,
     queryUser,
@@ -149,7 +150,11 @@ router.put("/api/user/friend-request",async(ctx,next)=>{
                 ctx.response.body={
                     status:1,
                     message:"send make friend request success"
-                }
+                };
+                pushNotification(targetAccount,{
+                    type:"friend-request/req",
+                    userAccount
+                })
             }).catch(e=>{
                 ctx.response.body={
                     status:-1,
@@ -192,11 +197,16 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
 
             })
             .then(result=>{
-                console.info(result);
                 ctx.response.body={
                     status: 1,
                     message:`response make friend request success `,
-                }
+                };
+
+                pushNotification(targetAccount,{
+                    type:"friend-request/res",
+                    resCode,
+                    userAccount,
+                })
 
             }).catch(e=>{
 

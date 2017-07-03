@@ -12,6 +12,10 @@
         .socket-url{
             width: 300px;
         }
+        .content{
+            width: 380px;
+            height: 200px;
+        }
     </style>
 </head>
 <body>
@@ -21,12 +25,22 @@
             <tr>
                 <td><label for="socket-url">socket:</label></td>
                 <td><input type="text" id="socket-url" class="socket-url" value="ws://127.0.0.1:3000">
+                    token:<input type="text" id="token">
                     <button id="confirm">confirm</button>
                 </td>
             </tr>
             <tr>
                 <td><label for="content">content:</label></td>
-                <td><input type="text" id="content" class="content" >
+                <td>
+                    <textarea id="content" class="content">
+{
+  "type":"boardCast",
+  "payload":{
+    "content":"xxxxxxx",
+    "to":"tester2"
+  }
+}
+                    </textarea>
                     <button id="send">send</button></td>
             </tr>
 
@@ -43,7 +57,8 @@
      let wsCon=null;
     function connection() {
         let socketUrl=document.getElementById("socket-url").value;
-        let ws = new WebSocket(socketUrl);
+        let token=document.getElementById("token").value;
+        let ws = new WebSocket(socketUrl+`?token=${token}`);
         ws.onopen=function () {
             console.info('open it');
 
@@ -55,6 +70,9 @@
                 console.error(e);
             }
         };
+        ws.onclose=function () {
+            console.info("close");
+        };
         wsCon=ws;
 
     }
@@ -65,7 +83,15 @@
         let content=document.getElementById("content");
         wsCon.send(content.value);
         addMessageItem(content.value,'self');
-        content.value="";
+        content.value=`
+{
+  "type":"boardCast",
+  "payload":{
+    "content":"xxxxxxx",
+    "to":"tester2"
+  }
+}
+        `;
     }
     let messageList=document.getElementById("message-list");
     function addMessageItem(message,from) {
