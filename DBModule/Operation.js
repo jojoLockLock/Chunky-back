@@ -111,7 +111,7 @@ function createChatRecordItemAndAddToChatRecords({from,to,content}) {
 }
 
 
-createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fucking test"});
+// createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fucking test"});
 //
 function sendMakeFriendsRequest(userAccount,targetAccount) {
     return Promise.all([
@@ -205,13 +205,13 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
         })
 }
 
-createUser({
-    userAccount:"tester3",
-    userPassword:"xxx",
-    userName:"tester3"
-}).then(()=>{
-    console.info("success");
-});
+// createUser({
+//     userAccount:"tester3",
+//     userPassword:"xxx",
+//     userName:"tester3"
+// }).then(()=>{
+//     console.info("success");
+// });
 
 // createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
 //     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),

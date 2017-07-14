@@ -177,10 +177,15 @@ chatRecordSchema.statics.isExist=function(firstUserAccount,secondUserAccount) {
 };
 //获取过去的聊天记录 limit为获得的条数 skip为开始查询的位置
 chatRecordSchema.methods.getChatRecordsData=function({limit=15,skip=0}={}) {
-    let length=this.records.length;
-    return {
+    
+    let length=this.records.length,
+        end=length-skip,
+        start=end-limit;
+        start=start<0?0:start;
+
+        return {
         total:length,
-        data:this.records.slice(length-skip-limit,length-skip).map(i=>{
+        data:this.records.slice(start,end).map(i=>{
             const {from,to,activeDate,content,_id}=i;
             return {
                 from,

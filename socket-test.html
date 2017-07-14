@@ -83,15 +83,15 @@
         let content=document.getElementById("content");
         wsCon.send(content.value);
         addMessageItem(content.value,'self');
-        content.value=`
-{
-  "type":"boardCast",
-  "payload":{
-    "content":"xxxxxxx",
-    "to":"tester2"
-  }
-}
-        `;
+//        content.value=`
+//{
+//  "type":"boardCast",
+//  "payload":{
+//    "content":"xxxxxxx",
+//    "to":"tester2"
+//  }
+//}
+//        `;
     }
     let messageList=document.getElementById("message-list");
     function addMessageItem(message,from) {
