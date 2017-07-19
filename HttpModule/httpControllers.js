@@ -12,13 +12,14 @@ const {
     resMakeFriendsRequest,
     becomeFriendsAndCreateChatRecords,
     getChatRecords,
+    createUser,
 }=operations;
 
 const router=koaRouter();
 
 router.get('/',async (ctx,next)=>{
 
-   ctx.response.body="hello world";
+   return ctx.response.body="hello world";
    
 });
 
@@ -27,7 +28,7 @@ router.get("/test",async(ctx,next)=>{
 
     let b = new Buffer(basicAuth, 'base64');
 
-    ctx.response.body=b.toString();
+    return ctx.response.body=b.toString();
 });
 
 /*
@@ -35,7 +36,7 @@ router.get("/test",async(ctx,next)=>{
 * */
 router.post("/api/auth",async(ctx,next)=>{
 
-    ctx.response.body={
+    return ctx.response.body={
         status:1,
         message:"auth success"
     }
@@ -52,7 +53,7 @@ router.get("/api/login",async(ctx,next)=>{
        await userLogin(userAccount,userPassword)
            .then(result=>{
 
-              ctx.response.body={
+              return ctx.response.body={
                   status:1,
                   payload:{
                       data:result,
@@ -62,7 +63,7 @@ router.get("/api/login",async(ctx,next)=>{
 
            }).catch(e=>{
 
-               ctx.response.body={
+               return ctx.response.body={
                    status:-1,
                    message:e.message,
                }
@@ -71,7 +72,7 @@ router.get("/api/login",async(ctx,next)=>{
 
    }catch(e){
 
-      return {
+      return ctx.response.body={
           status:-1,
           message:e.message,
       }
@@ -88,14 +89,14 @@ router.delete("/api/token",async(ctx,next)=>{
 
         delToken(token);
 
-        ctx.response.body={
+        return ctx.response.body={
             status:1,
             message:"del token success"
         }
 
     }catch(e){
 
-        ctx.response.body={
+        return ctx.response.body={
             status:-1,
             message:e.message,
         }
@@ -111,25 +112,67 @@ router.get("/api/user",async(ctx,next)=>{
 
         const {value}=ctx.query;
         if(value.trim().length===0){
-            ctx.response.body={
+            return ctx.response.body={
                 status:-1,
                 message:`value is required`,
             }
         }
         await queryUser(value).then(result=>{
-            ctx.response.body={
+            return ctx.response.body={
                 status:1,
                 payload:result,
             }
         }).catch(e=>{
-            ctx.response.body={
+            return ctx.response.body={
                 status:-1,
                 message:e.message,
             }
         })
 
     }catch(e){
-        ctx.response.body={
+        return ctx.response.body={
+            status:-1,
+            message:e.message
+        }
+    }
+});
+
+/*
+ * 注册用户
+ * */
+router.post("/api/user",async(ctx,next)=>{
+
+    try{
+
+        const {userAccount,userPassword,userName,inviteCode}=ctx.request.body;
+
+        if(inviteCode!=="123456"){
+            return ctx.response.body={
+                status:-1,
+                message:`invite code error`,
+            }
+        }
+
+        if(userAccount.trim().length===0||userPassword.trim().length===0||userName.trim().length===0){
+            return ctx.response.body={
+                status:-1,
+                message:`data can not allow null`,
+            }
+        }
+        await createUser({userAccount,userPassword,userName}).then(result=>{
+            return ctx.response.body={
+                status:1,
+                message:"register success",
+            }
+        }).catch(e=>{
+            return ctx.response.body={
+                status:-1,
+                message:e.message,
+            }
+        })
+
+    }catch(e){
+        return ctx.response.body={
             status:-1,
             message:e.message
         }
@@ -147,7 +190,7 @@ router.put("/api/user/friend-request",async(ctx,next)=>{
 
         await sendMakeFriendsRequest(userAccount,targetAccount)
             .then(result=>{
-                ctx.response.body={
+                return ctx.response.body={
                     status:1,
                     message:"send make friend request success"
                 };
@@ -156,14 +199,14 @@ router.put("/api/user/friend-request",async(ctx,next)=>{
                     userAccount
                 })
             }).catch(e=>{
-                ctx.response.body={
+                return ctx.response.body={
                     status:-1,
                     message:e.message,
                 }
             })
 
     }catch(e){
-        ctx.response.body={
+        return ctx.response.body={
             status:-1,
             message:e.message,
         }
@@ -182,7 +225,7 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
         resCode=parseInt(resCode);
 
         if(resCode!==1||resCode!==-1){
-            ctx.response.body={
+            return ctx.response.body={
                 status:-1,
                 message:`resCode:${resCode} is not allowed`
             }
@@ -197,7 +240,7 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
 
             })
             .then(result=>{
-                ctx.response.body={
+                return ctx.response.body={
                     status: 1,
                     message:`response make friend request success `,
                 };
@@ -210,14 +253,14 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
 
             }).catch(e=>{
 
-                ctx.response.body={
+                return ctx.response.body={
                     status:-1,
                     message:e.message,
                 }
             })
 
     }catch(e){
-        ctx.response.body={
+        return ctx.response.body={
             status:-1,
             message:e.message,
         }
@@ -234,19 +277,19 @@ router.get("/api/user/chat-record",async(ctx,next)=>{
 
        await getChatRecords(userAccount,targetAccount,{limit,skip})
            .then(result=>{
-               ctx.response.body={
+               return ctx.response.body={
                    status:1,
                    payload:result,
                }
            })
            .catch(e=>{
-               ctx.response.body={
+               return ctx.response.body={
                    status:-1,
                    message:e.message
                }
            })
    }catch(e){
-       ctx.response.body={
+       return ctx.response.body={
            status:-1,
            message:e.message,
        }
@@ -275,19 +318,19 @@ router.get("/api/user/chat-records",async(ctx,next)=>{
                     payload[targets[index]]=r;
                 })
 
-                ctx.response.body={
+                return ctx.response.body={
                     status:1,
                     payload,
                 }
             })
             .catch(e=>{
-                ctx.response.body={
+                return ctx.response.body={
                     status:-1,
                     message:e.message
                 }
             })
     }catch(e){
-        ctx.response.body={
+        return ctx.response.body={
             status:-1,
             message:e.message,
         }

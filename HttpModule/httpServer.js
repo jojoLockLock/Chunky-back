@@ -23,6 +23,8 @@ const isOpenUrl = (ctx)=>{
     const {method,path}=ctx;
 
     switch (path){
+        case "/api/user":
+            return Object.is(method,"POST");
         case "/api/login":
             return Object.is(method,"GET");
         case "/":
