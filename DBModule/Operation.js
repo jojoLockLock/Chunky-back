@@ -200,10 +200,17 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
             if(result.isExist){
                 return result.target.getChatRecordsData(options)
             }else{
-                throw new Error(`password is error`);
+                throw new Error(`chat records between:${firstUserAccount} and ${secondUserAccount} is not exist`);
             }
         })
 }
+
+// createUser({
+//     userAccount:"jojo2",
+//     userPassword:"123456",
+//     userName:"jojo2"
+// }).then(()=>{
+// })
 
 // createUser({
 //     userAccount:"tester3",
@@ -212,6 +219,17 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
 // }).then(()=>{
 //     console.info("success");
 // });
+// createUser({
+//     userAccount:"tester4",
+//     userPassword:"123456",
+//     userName:"tester3",
+// }).then(result=>{
+//     becomeFriendsAndCreateChatRecords("tester1","tester4");
+// })
+
+
+
+
 
 // createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
 //     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),

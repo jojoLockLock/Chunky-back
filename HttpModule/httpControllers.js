@@ -254,5 +254,45 @@ router.get("/api/user/chat-record",async(ctx,next)=>{
 });
 
 
+/*
+ * 获得多人的聊天记录
+ * */
+router.get("/api/user/chat-records",async(ctx,next)=>{
+    try{
+        const {limit=15,skip=0,targetAccount}=ctx.query;
+        const {userAccount}=ctx.state;
+
+        const targets=targetAccount.split(",")
+
+        await Promise.all(targets.map(t=>{
+                return getChatRecords(userAccount,t,{limit,skip})
+            }))
+            .then(result=>{
+
+                const payload={};
+
+                result.forEach((r,index)=>{
+                    payload[targets[index]]=r;
+                })
+
+                ctx.response.body={
+                    status:1,
+                    payload,
+                }
+            })
+            .catch(e=>{
+                ctx.response.body={
+                    status:-1,
+                    message:e.message
+                }
+            })
+    }catch(e){
+        ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+});
+
 
 export default router;
