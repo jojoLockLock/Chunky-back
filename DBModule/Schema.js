@@ -79,7 +79,6 @@ userSchema.methods.getLoginData=function () {
       userName:this.userName,
       _id:this._id,
       friendList:this.friendList,
-      addressListNotifications:this.addressListNotifications,
       icon:this.icon,
   }
 };
@@ -157,6 +156,29 @@ userSchema.methods.updateFriendNotifications=function (userAccount,resCode) {
 
     })
 };
+
+userSchema.methods.getFriendNotifications=function ({limit=15,skip=0}={}) {
+
+    let length=this.friendsNotifications.length,
+        end=length-skip,
+        start=end-limit;
+        start=start<0?0:start;
+
+        return {
+            total:length,
+            data:this.friendsNotifications.slice(start,end).map(i=>{
+                const {userAccount,activeDate,resCode,_id}=i;
+
+                return {
+                    userAccount,
+                    activeDate:activeDate.getTime(),
+                    resCode,
+                    _id,
+                }
+
+            })
+        }
+}
 
 chatRecordSchema.statics.isExist=function(firstUserAccount,secondUserAccount) {
     return new Promise((resolve,reject)=>{

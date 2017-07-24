@@ -13,6 +13,7 @@ const {
     becomeFriendsAndCreateChatRecords,
     getChatRecords,
     createUser,
+    getNotificationsByUserAccount,
 }=operations;
 
 const router=koaRouter();
@@ -337,5 +338,34 @@ router.get("/api/user/chat-records",async(ctx,next)=>{
     }
 });
 
+
+/*
+ * 获得好友相关通知
+ * */
+router.get("/api/notifications/friend-request",async(ctx,next)=>{
+    try{
+        const {limit=15,skip=0}=ctx.query;
+        const {userAccount}=ctx.state;
+
+        await getNotificationsByUserAccount(userAccount,{limit,skip})
+            .then(result=>{
+                return ctx.response.body={
+                    status:1,
+                    payload:result,
+                }
+            })
+            .catch(e=>{
+                return ctx.response.body={
+                    status:-1,
+                    message:e.message
+                }
+            })
+    }catch(e){
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+});
 
 export default router;

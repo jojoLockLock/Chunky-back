@@ -205,6 +205,18 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
         })
 }
 
+
+function getNotificationsByUserAccount(userAccount,options) {
+    return User.isExist(userAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.getFriendNotifications(options);
+            }else{
+                throw new Error(`user:${userAccount} is not exist`);
+            }
+        })
+}
+
 // createUser({
 //     userAccount:"jojo2",
 //     userPassword:"123456",
@@ -261,4 +273,5 @@ export default {
     resMakeFriendsRequest,
     userLogin,
     getChatRecords,
+    getNotificationsByUserAccount,
 }
