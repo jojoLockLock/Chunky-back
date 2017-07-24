@@ -217,6 +217,30 @@ function getNotificationsByUserAccount(userAccount,options) {
         })
 }
 
+function setUserBasicInfo(userAccount,{userName,icon}={}) {
+    if(userName.trim().length===0||icon.trim().length===0){
+        throw new Error("fields are not full");
+    }
+    return User.isExist(userAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.setBasicInfo({userName,icon});
+            }
+        })
+}
+
+function modifyUserPassword(userAccount,oldPassword,newPassword) {
+    if(oldPassword.trim().length===0||newPassword.trim().length===0){
+        throw new Error("fields are not full");
+    }
+    return User.isExist(userAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.modifyPassword(oldPassword,newPassword);
+            }
+        })
+}
+
 // createUser({
 //     userAccount:"jojo2",
 //     userPassword:"123456",
@@ -274,4 +298,7 @@ export default {
     userLogin,
     getChatRecords,
     getNotificationsByUserAccount,
+    getUserPublicData,
+    setUserBasicInfo,
+    modifyUserPassword,
 }

@@ -107,6 +107,42 @@ userSchema.methods.addToFriendList=function (userAccount) {
     })
 };
 
+userSchema.methods.setBasicInfo=function ({icon,userName}) {
+    return new Promise((resolve,reject)=>{
+        if(icon.trim().length===0||userName.trim().length===0){
+            return reject(new Error("field are not full"))
+        }
+
+        this.userName=userName;
+        this.icon=icon;
+
+        this.save((err,result)=>{
+            err?reject(err):resolve(result);
+        })
+
+
+    })
+}
+
+userSchema.methods.modifyPassword=function (oldPassword,newPassword) {
+    return new Promise((resolve,reject)=>{
+        if(oldPassword.trim().length===0||newPassword.trim().length===0){
+            return reject(new Error("field are not full"))
+        }
+        if(!this.verifyPassword(oldPassword)){
+            return reject(new Error(`password for ${this.userAccount} is wrong`));
+        }
+
+        this.userPassword=newPassword;
+
+        this.save((err,result)=>{
+            err?reject(err):resolve(result);
+        })
+
+
+    })
+}
+
 userSchema.methods.getPublicData=function () {
   return {
       userAccount:this.userAccount,
@@ -229,27 +265,3 @@ module.exports={
     ChatRecord,
     ChatRecordItem
 };
-// for(let i=10;i<=10;++i){
-//     const newUser=new User({
-//         userAccount:"123_"+i,
-//         userPassword:"123123_"+i,
-//         userName:"xxxxx_"+i,
-//     });
-//     newUser.save((err,result)=>{
-//         console.info(err);
-//         console.info(result)
-//     });
-// }
-// User.find({}).sort({registerDate:-1}).count().exec((err,result)=>{
-//     console.info(err)
-//     console.info(result);
-// })
-// User.count({},(err,result)=>{
-//     console.info(err)
-//     console.info(result);
-// })
-// User.isExist("123222222222").then((result)=>{
-//     console.info(result)
-// }).catch(err=>{
-//     console.info(err);
-// });

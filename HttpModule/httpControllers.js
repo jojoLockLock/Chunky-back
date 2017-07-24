@@ -14,6 +14,9 @@ const {
     getChatRecords,
     createUser,
     getNotificationsByUserAccount,
+    getUserPublicData,
+    modifyPassword,
+    setUserInfo
 }=operations;
 
 const router=koaRouter();
@@ -346,13 +349,28 @@ router.get("/api/notifications/friend-request",async(ctx,next)=>{
     try{
         const {limit=15,skip=0}=ctx.query;
         const {userAccount}=ctx.state;
-
+        let notifications=null;
         await getNotificationsByUserAccount(userAccount,{limit,skip})
             .then(result=>{
+
+                notifications=result;
+
+                return Promise.all(result.data.map(i=>{
+                    return getUserPublicData(i.userAccount)
+                }))
+
+
+            })
+            .then(result=>{
+                notifications.data.forEach((i,index)=>{
+                    i.data=result[index];
+                })
+
                 return ctx.response.body={
                     status:1,
-                    payload:result,
+                    payload:notifications,
                 }
+
             })
             .catch(e=>{
                 return ctx.response.body={
@@ -367,5 +385,90 @@ router.get("/api/notifications/friend-request",async(ctx,next)=>{
         }
     }
 });
+
+
+/*
+ * 修改用户信息
+ * */
+router.patch("/api/user",async(ctx,next)=>{
+    try{
+        let {userName="",icon=""}=ctx.request.body;
+        const {userAccount}=ctx.state;
+
+        if(userName.trim().length===0||icon.trim().length===0){
+            return ctx.response.body={
+                status:-1,
+                message:"filed are not full"
+            }
+
+        }
+
+
+        await setUserInfo(userAccount,{userName,icon})
+            .then(result=>{
+
+                return ctx.response.body={
+                    status:1,
+                    message:"patch success"
+                }
+
+
+            })
+            .catch(e=>{
+                return ctx.response.body={
+                    status:-1,
+                    message:e.message
+                }
+            })
+    }catch(e){
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+});
+
+
+/*
+ * 修改用户密码
+ * */
+router.patch("/api/user/password",async(ctx,next)=>{
+    try{
+        let {oldPassword,newPassword}=ctx.request.body;
+        const {userAccount}=ctx.state;
+
+        if(oldPassword.trim().length===0||newPassword.trim().length===0){
+            return ctx.response.body={
+                status:-1,
+                message:"filed are not full"
+            }
+
+        }
+
+
+        await modifyPassword(userAccount,oldPassword,newPassword)
+            .then(result=>{
+
+                return ctx.response.body={
+                    status:1,
+                    message:"patch success"
+                }
+
+
+            })
+            .catch(e=>{
+                return ctx.response.body={
+                    status:-1,
+                    message:e.message
+                }
+            })
+    }catch(e){
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+});
+
 
 export default router;
