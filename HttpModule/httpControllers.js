@@ -16,7 +16,8 @@ const {
     getNotificationsByUserAccount,
     getUserPublicData,
     modifyPassword,
-    setUserInfo
+    setUserInfo,
+    getUserLoginData,
 }=operations;
 
 const router=koaRouter();
@@ -82,7 +83,39 @@ router.get("/api/login",async(ctx,next)=>{
       }
    }
 });
+/*
+* 获得个人用户数据
+* */
+router.get("/api/user/basic",async(ctx,next)=>{
+    try{
+        const {userAccount}=ctx.state;
+        await getUserLoginData(userAccount)
+            .then(result=>{
 
+                return ctx.response.body={
+                    status:1,
+                    payload:{
+                        data:result,
+                    }
+                }
+
+            }).catch(e=>{
+
+                return ctx.response.body={
+                    status:-1,
+                    message:e.message,
+                }
+
+            });
+
+    }catch(e){
+
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+});
 /*
 * 删除token
 * */
@@ -228,7 +261,7 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
 
         resCode=parseInt(resCode);
 
-        if(resCode!==1||resCode!==-1){
+        if(resCode!==1&&resCode!==-1){
             return ctx.response.body={
                 status:-1,
                 message:`resCode:${resCode} is not allowed`

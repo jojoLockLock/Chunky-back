@@ -301,4 +301,5 @@ export default {
     getUserPublicData,
     setUserBasicInfo,
     modifyUserPassword,
+    getUserLoginData,
 }
