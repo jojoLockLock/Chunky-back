@@ -33,6 +33,7 @@ export default function (server) {
 
 export const pushNotification=(userAccount,message)=>{
     if(userAccount in socketConList){
+        console.info(userAccount,message);
         socketConList[userAccount].send(JSON.stringify({
             type:"notification",
             status:1,

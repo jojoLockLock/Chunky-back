@@ -227,14 +227,17 @@ router.put("/api/user/friend-request",async(ctx,next)=>{
 
         await sendMakeFriendsRequest(userAccount,targetAccount)
             .then(result=>{
-                return ctx.response.body={
-                    status:1,
-                    message:"send make friend request success"
-                };
+
                 pushNotification(targetAccount,{
                     type:"friend-request/req",
                     userAccount
                 })
+
+                return ctx.response.body={
+                    status:1,
+                    message:"send make friend request success"
+                };
+
             }).catch(e=>{
                 return ctx.response.body={
                     status:-1,
