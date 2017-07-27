@@ -96,7 +96,7 @@ class SocketControllers {
         const {connection,controllers,send}=this;
         connection.on('message',(message)=>{
             try{
-
+                console.info("origin data",message);
                 let _message=JSON.parse(message),
                     type=_message.type;
 

@@ -16,7 +16,7 @@ const boardCastController=(send,message,mc)=>{
     const {connectionInfo,socketConnectList}=mc;
     const {userAccount}=connectionInfo;
     try{
-
+        console.info(userAccount,to);
         createChatRecordItemAndAddToChatRecords({
             from:userAccount,
             to:to,

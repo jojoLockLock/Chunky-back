@@ -27,6 +27,12 @@ const userSchema=new Schema({
             //消息状态 0 表示未回复 1表示接受 -1表示拒绝
             resCode:{type:Number,default:0,required:'{PATH} is required!'}
         }
+    ],
+    unreadMessages:[
+        {
+            userAccount:{type:String,required:"{PATH} is required!"},
+            count:{type:Number,default:0}
+        }
     ]
 });
 
@@ -82,6 +88,84 @@ userSchema.methods.getLoginData=function () {
       icon:this.icon,
   }
 };
+
+userSchema.methods.increaseUnreadMessagesCount=function (userAccount) {
+    return new Promise((resolve,reject)=>{
+        //检查是否存在 不存在返回
+        let isFriendExist=this.friendList.some(f=>{
+            return f===userAccount;
+        })
+
+        if(!isFriendExist){
+            return reject(new Error(`${userAccount} have not exist in ${this.userAccount}'s friend list `))
+        }
+
+        let targetIndex=-1;
+
+        this.unreadMessages.some((urm,index)=>{
+            if(urm.userAccount===userAccount){
+                targetIndex=index;
+                return true;
+            }
+        })
+
+        //不存在添加 默认count为1
+
+        if(targetIndex===-1){
+            this.unreadMessages.push({
+                userAccount,
+                count:1,
+            })
+        }else{
+           this.unreadMessages[targetIndex].count+=1;
+        }
+
+        this.save((err,result)=>{
+            err?reject(err):resolve(result);
+        })
+
+
+    })
+}
+
+userSchema.methods.initUnreadMessagesCount=function (userAccount) {
+    return new Promise((resolve,reject)=>{
+        //检查是否存在 不存在返回
+        let isFriendExist=this.friendList.some(f=>{
+            return f===userAccount;
+        })
+
+        if(!isFriendExist){
+            return reject(new Error(`${userAccount} have not exist in ${this.userAccount}'s friend list `))
+        }
+
+        let targetIndex=-1;
+
+        this.unreadMessages.some((urm,index)=>{
+            if(urm.userAccount===userAccount){
+                targetIndex=index;
+                return true;
+            }
+        })
+
+        //不存在添加 默认count为0
+
+        if(targetIndex===-1){
+            this.unreadMessages.push({
+                userAccount,
+                count:0,
+            })
+        }else{
+            this.unreadMessages[targetIndex].count=0;
+        }
+
+        this.save((err,result)=>{
+            err?reject(err):resolve(result);
+        })
+
+
+    })
+}
 
 userSchema.methods.verifyPassword=function (userPassword) {
     return this.userPassword===userPassword;
@@ -194,6 +278,14 @@ userSchema.methods.updateFriendNotifications=function (userAccount,resCode) {
 
     })
 };
+
+userSchema.methods.getUnreadMessagesCount=function () {
+    let {unreadMessages=[]}=this;
+    return unreadMessages.map(um=>({
+        userAccount:um.userAccount,
+        count:um.count,
+    }))
+}
 
 userSchema.methods.getFriendNotifications=function ({limit=15,skip=0}={}) {
 

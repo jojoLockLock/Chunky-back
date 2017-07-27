@@ -18,6 +18,7 @@ const {
     modifyPassword,
     setUserInfo,
     getUserLoginData,
+    initUnreadMessagesCount,
 }=operations;
 
 const router=koaRouter();
@@ -506,5 +507,42 @@ router.patch("/api/user/password",async(ctx,next)=>{
     }
 });
 
+router.patch("/api/user/unread-messages",async(ctx,next)=>{
+    try{
+        let {targetAccount}=ctx.request.body;
+        const {userAccount}=ctx.state;
+
+        if(targetAccount.trim().length===0){
+            return ctx.response.body={
+                status:-1,
+                message:"filed are not full"
+            }
+
+        }
+
+
+        await initUnreadMessagesCount(userAccount,targetAccount)
+            .then(result=>{
+
+                return ctx.response.body={
+                    status:1,
+                    message:"patch success"
+                }
+
+
+            })
+            .catch(e=>{
+                return ctx.response.body={
+                    status:-1,
+                    message:e.message
+                }
+            })
+    }catch(e){
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+})
 
 export default router;

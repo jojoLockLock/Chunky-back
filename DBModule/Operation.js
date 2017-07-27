@@ -57,7 +57,6 @@ function becomeFriends(firstUserAccount,secondUserAccount) {
 }
 //
 
-becomeFriendsAndCreateChatRecords("tester2","tester4")
 
 function createChatRecords(firstUserAccount,secondUserAccount) {
     return ChatRecord.isExist(firstUserAccount,secondUserAccount)
@@ -111,6 +110,9 @@ function addChatRecordItems(firstUserAccount,secondUserAccount,items) {
 //
 function createChatRecordItemAndAddToChatRecords({from,to,content}) {
     return addChatRecordItems(from,to,[createChatRecordItem({from,to,content})])
+        .then(result=>{
+            return increaseUnreadMessagesCount(to,from)
+        })
 }
 
 
@@ -158,12 +160,14 @@ function getUserPublicData(userAccount) {
 }
 //
 function getUserLoginData(userAccount) {
-    let userData=null;
+    let userData=null,
+        target=null;
     return User.isExist(userAccount)
         .then(result=>{
 
             if(result.isExist){
-                return result.target.getLoginData();
+                target=result.target;
+                return target.getLoginData();
             }else{
                 throw new Error(`userAccount:${userAccount} is not exist`);
             }
@@ -176,6 +180,7 @@ function getUserLoginData(userAccount) {
         }).then(result=>{
 
             userData.friendList=result;
+            userData.unreadMessagesCount=target.getUnreadMessagesCount();
             return userData;
         })
 }
@@ -289,6 +294,28 @@ function modifyUserPassword(userAccount,oldPassword,newPassword) {
 //     sendMakeFriendsRequest("tester1","tester2");
 // });
 
+function increaseUnreadMessagesCount(userAccount,targetAccount) {
+    return User.isExist(userAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.increaseUnreadMessagesCount(targetAccount)
+            }else{
+                throw new Error(`userAccount:${userAccount} is not exist`);
+            }
+        })
+
+}
+
+function initUnreadMessagesCount(userAccount,targetAccount) {
+    return User.isExist(userAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.initUnreadMessagesCount(targetAccount)
+            }else{
+                throw new Error(`userAccount:${userAccount} is not exist`);
+            }
+        })
+}
 
 
 export default {
@@ -305,4 +332,6 @@ export default {
     setUserBasicInfo,
     modifyUserPassword,
     getUserLoginData,
+    initUnreadMessagesCount,
+    // increaseUnreadMessagesCount,
 }
