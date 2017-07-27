@@ -56,6 +56,9 @@ function becomeFriends(firstUserAccount,secondUserAccount) {
     })
 }
 //
+
+becomeFriendsAndCreateChatRecords("tester2","tester4")
+
 function createChatRecords(firstUserAccount,secondUserAccount) {
     return ChatRecord.isExist(firstUserAccount,secondUserAccount)
         .then((result)=>{

@@ -90,8 +90,10 @@ userSchema.methods.verifyPassword=function (userPassword) {
 userSchema.methods.addToFriendList=function (userAccount) {
 
 
+
+
     return new Promise((resolve,reject)=>{
-        if(this.friendList.some(i=>i.userAccount===userAccount)){
+        if(this.friendList.some(i=>i===userAccount)){
             resolve()
         }else{
             this.friendList.push(userAccount);
