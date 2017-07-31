@@ -5,6 +5,9 @@ import koaRouter from 'koa-router';
 import operations from "../DBModule/Operation";
 import {getToken,delToken} from '../AuthModule';
 import {pushNotification} from '../SocketModule/socketServer';
+import {inviteCode} from '../Config/AppConfig';
+import fs from 'fs';
+import path from 'path';
 const {
     userLogin,
     queryUser,
@@ -182,9 +185,9 @@ router.post("/api/user",async(ctx,next)=>{
 
     try{
 
-        const {userAccount,userPassword,userName,inviteCode}=ctx.request.body;
+        const {userAccount,userPassword,userName,inviteCode:inviteCodeFromClient }=ctx.request.body;
 
-        if(inviteCode!=="123456"){
+        if(inviteCodeFromClient!==inviteCode){
             return ctx.response.body={
                 status:-1,
                 message:`invite code error`,
@@ -506,7 +509,9 @@ router.patch("/api/user/password",async(ctx,next)=>{
         }
     }
 });
-
+/*
+* 获得未读信息数量
+* */
 router.patch("/api/user/unread-messages",async(ctx,next)=>{
     try{
         let {targetAccount}=ctx.request.body;
@@ -545,4 +550,42 @@ router.patch("/api/user/unread-messages",async(ctx,next)=>{
     }
 })
 
+router.patch("/api/user/icon",async(ctx,next)=>{
+    try{
+        const file=ctx.request.body.files.file;
+        const {userAccount}=ctx.state;
+        const {name,size}=file;
+
+        if((!name.endsWith(".jpg"))&&(!name.endsWith(".png"))){
+            return ctx.response.body={
+                status:-1,
+                message:"only allow jpg or png"
+            }
+        }
+
+        if(size/1024/1024>2){
+            return ctx.response.body={
+                status:-1,
+                message:"can not allow over 2M"
+            }
+        }
+
+        const suffix=name.substr(name.lastIndexOf("."));
+        const staticFileName=`icon-${userAccount}-${new Date().getTime()}${suffix}`;
+        const reader = fs.createReadStream(file.path);
+        const stream = fs.createWriteStream(path.join(__dirname,"../static", staticFileName));
+
+        reader.pipe(stream);
+        console.log('uploading %s -> %s', file.name, stream.path);
+        ctx.response.body={
+            status:1,
+            message:"success upload file"
+        }
+    }catch(e){
+        return ctx.response.body={
+            status:-1,
+            message:e.message,
+        }
+    }
+})
 export default router;

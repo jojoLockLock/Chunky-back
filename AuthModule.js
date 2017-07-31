@@ -26,7 +26,7 @@ export function verifyToken(token){
 
 	const result=jwt.decode(token,AppConfig.secretKey);
 	const userAccount=result.iss.split('#')[0];
-
+	console.info(tokenList,result.iss);
 	if(tokenList[userAccount]!==result.iss){
 		throw new Error("token is not true");
 	}

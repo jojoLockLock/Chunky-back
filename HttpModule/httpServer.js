@@ -5,6 +5,9 @@ import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import httpControllers from './httpControllers';
 import {getToken,verifyToken} from '../AuthModule';
+import koaStaticCache from 'koa-static-cache';
+import koaBody from 'koa-body';
+import path from 'path';
 const app=new Koa();
 
 const printTime= async (ctx,next)=>{
@@ -21,6 +24,11 @@ const printTime= async (ctx,next)=>{
 
 const isOpenUrl = (ctx)=>{
     const {method,path}=ctx;
+
+    console.info(path);
+    if(path.startsWith("/static/")){
+        return Object.is(method,"GET");
+    }
 
     switch (path){
         case "/api/user":
@@ -76,6 +84,12 @@ export default function ({port}={port:3000}) {
     app.use(bodyParser());
 
     app.use(printTime);
+
+    app.use(koaBody({ multipart: true }));
+
+    app.use(koaStaticCache(path.join(__dirname, '../static'), {
+        maxAge: 365 * 24 * 60 * 60
+    }))
 
     app.use(filterReq);
 
