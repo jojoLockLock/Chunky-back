@@ -213,6 +213,21 @@ function getChatRecords(firstUserAccount,secondUserAccount,options={limit:15,ski
         })
 }
 
+/*
+*
+* */
+function getChatRecordsById(firstUserAccount,secondUserAccount,options={limit:15}) {
+    return ChatRecord.isExist(firstUserAccount,secondUserAccount)
+        .then(result=>{
+            if(result.isExist){
+                return result.target.getChatRecordsById(options);
+            }else{
+                throw new Error(`chat records between:${firstUserAccount} and ${secondUserAccount} is not exist`);
+            }
+        })
+}
+
+
 
 function getNotificationsByUserAccount(userAccount,options) {
     return User.isExist(userAccount)
@@ -249,50 +264,7 @@ function modifyUserPassword(userAccount,oldPassword,newPassword) {
         })
 }
 
-// createUser({
-//     userAccount:"jojo2",
-//     userPassword:"123456",
-//     userName:"jojo2"
-// }).then(()=>{
-// })
 
-// createUser({
-//     userAccount:"tester3",
-//     userPassword:"xxx",
-//     userName:"tester3"
-// }).then(()=>{
-//     console.info("success");
-// });
-// createUser({
-//     userAccount:"tester4",
-//     userPassword:"123456",
-//     userName:"tester3",
-// }).then(result=>{
-//     becomeFriendsAndCreateChatRecords("tester1","tester4");
-// })
-
-
-
-
-
-// createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
-//     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
-//     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
-//     createChatRecordItemAndAddToChatRecords({from:"tester1",to:"tester2",content:"fuck"}),
-// Promise.all([
-//     createUser({
-//         userAccount:"tester1",
-//         userPassword:"123456",
-//         userName:"one"
-//     }),
-//     createUser({
-//         userAccount:"tester2",
-//         userPassword:"123456",
-//         userName:"two"
-//     })
-// ]).then(()=>{
-//     sendMakeFriendsRequest("tester1","tester2");
-// });
 
 function increaseUnreadMessagesCount(userAccount,targetAccount) {
     return User.isExist(userAccount)
@@ -333,5 +305,6 @@ export default {
     modifyUserPassword,
     getUserLoginData,
     initUnreadMessagesCount,
+    getChatRecordsById,
     // increaseUnreadMessagesCount,
 }

@@ -349,6 +349,35 @@ chatRecordSchema.methods.getChatRecordsData=function({limit=15,skip=0}={}) {
         })
     }
 };
+
+chatRecordSchema.methods.getChatRecordsById=function ({startId,limit=10}) {
+    const  records=this.records;
+    let targetIndex=records.findIndex((i,index)=>{
+        return i._id.toString()===startId;
+    })
+    let endIndex=targetIndex===-1?records.length:targetIndex;
+
+    let startIndex=endIndex-10;
+
+    startIndex=endIndex<0?0:startIndex;
+
+    return {
+        total:records.length,
+        data:records.slice(startIndex,endIndex).map(i=>{
+            const {from,to,activeDate,content,_id}=i;
+            return {
+                from,
+                to,
+                content,
+                _id,
+                activeDate:activeDate.getTime()
+            };
+        })
+    }
+
+}
+
+
 const User=mongoose.model("User",userSchema);
 const ChatRecord=mongoose.model("ChatRecord",chatRecordSchema);
 const ChatRecordItem=mongoose.model("ChatRecordItem",chatRecordItemSchema);
