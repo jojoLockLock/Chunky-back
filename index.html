@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    let ws = new WebSocket("ws://127.0.0.1:3000?token=111111111111");
+    ws.onopen=function () {
+        console.info("...");
+    }
+</script>
+</body>
+</html>

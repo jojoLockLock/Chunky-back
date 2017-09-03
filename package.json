@@ -1,32 +1,27 @@
 {
-  "name": "chunky-back",
+  "name": "chunky-server-remodel",
   "version": "1.0.0",
-  "description": "\"chunky server\"",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node App.js"
+    "start": "babel-node index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jojoLockLock/Chunky-back.git"
-  },
-  "keywords": [
-    "chunky"
-  ],
-  "author": "jojoLockLock",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jojoLockLock/Chunky-back/issues"
-  },
-  "homepage": "https://github.com/jojoLockLock/Chunky-back#readme",
   "dependencies": {
-    "jsonwebtoken": "^7.4.0",
-    "koa": "^2.2.0",
+    "co-busboy": "^1.3.1",
+    "jwt-simple": "^0.5.1",
+    "koa": "^2.3.0",
+    "koa-body": "^2.3.0",
     "koa-bodyparser": "^4.2.0",
-    "koa-router": "^7.1.1",
-    "mongoose": "^4.9.6",
-    "nodejs-websocket": "^1.7.1",
+    "koa-router": "^7.2.1",
+    "koa-static": "^4.0.1",
+    "koa-static-cache": "^5.1.1",
+    "moment": "^2.18.1",
+    "mongoose": "^4.10.6",
+    "multer": "^1.3.0",
     "ws": "^2.3.1"
   },
   "devDependencies": {

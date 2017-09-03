@@ -1,0 +1,468 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Chunky API接口文档",
+    "description": ""
+  },
+  "host": "localhost",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "login",
+      "description": "登陆"
+    },
+    {
+      "name": "token",
+      "description": "token"
+    },
+    {
+      "name": "user",
+      "description": "用户相关"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/api/login": {
+      "get": {
+        "tags": [
+          "login"
+        ],
+        "summary": "登陆获得用户基础数据和token",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "userAccount",
+            "type": "string",
+            "description": "账号",
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "userPassword",
+            "type": "string",
+            "description": "用户密码",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/loginRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/token": {
+      "delete": {
+        "tags": [
+          "token"
+        ],
+        "summary": "删除在客户端的token",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "access-token",
+            "type": "string",
+            "required": true,
+            "description": "用于验证身份的token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/delTokenRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "查询用户信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "access-token",
+            "type": "string",
+            "required": true,
+            "description": "用于验证身份的token"
+          },
+          {
+            "in": "query",
+            "name": "value",
+            "required": true,
+            "description": "用户查询的值 userName或者userAccount",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getUserRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/user/friend-request": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "发起好友请求",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "access-token",
+            "type": "string",
+            "required": true,
+            "description": "用于验证身份的token"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "目标的账号",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/putFriendReqReq"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/putFriendReqRes"
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "user"
+        ],
+        "summary": "回复添加好友请求",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "access-token",
+            "type": "string",
+            "required": true,
+            "description": "用于验证身份的token"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "回复的内容",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/patchFriendReqReq"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/patchFriendReqRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/user/chat-record": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "获得更久之前的聊天记录",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "access-token",
+            "type": "string",
+            "required": true,
+            "description": "用于验证身份的token"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "type": "string",
+            "required": true,
+            "description": "获取聊天记录的数目"
+          },
+          {
+            "in": "query",
+            "name": "skip",
+            "type": "string",
+            "required": true,
+            "description": "当前聊天记录信息数量"
+          },
+          {
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "name": "targetAccount",
+            "description": "目标账号"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getRecordRes"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "loginRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "message": {
+          "$ref": "#/definitions/message"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "$ref": "#/definitions/userName"
+                },
+                "_id": {
+                  "type": "string",
+                  "description": "用户唯一的id",
+                  "example": "5943ac1aaa42340c48bbe366"
+                },
+                "icon": {
+                  "$ref": "#/definitions/icon"
+                },
+                "friendList": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/userPublicData"
+                  }
+                }
+              }
+            },
+            "token": {
+              "$ref": "#/definitions/token"
+            }
+          }
+        }
+      }
+    },
+    "userPublicData": {
+      "type": "object",
+      "properties": {
+        "userAccount": {
+          "$ref": "#/definitions/userAccount"
+        },
+        "userName": {
+          "$ref": "#/definitions/userName"
+        },
+        "icon": {
+          "$ref": "#/definitions/icon"
+        }
+      }
+    },
+    "delTokenRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        }
+      }
+    },
+    "getUserRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userPublicData"
+          }
+        }
+      }
+    },
+    "putFriendReqReq": {
+      "type": "object",
+      "properties": {
+        "targetAccount": {
+          "$ref": "#/definitions/userAccount"
+        }
+      }
+    },
+    "putFriendReqRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        }
+      }
+    },
+    "patchFriendReqReq": {
+      "type": "object",
+      "properties": {
+        "targetAccount": {
+          "$ref": "#/definitions/userAccount"
+        },
+        "resCode": {
+          "type": "integer",
+          "enum": [
+            1,
+            -1
+          ]
+        }
+      }
+    },
+    "patchFriendReqRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        }
+      }
+    },
+    "getRecordRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "$ref": "#/definitions/total"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/recordItem"
+              }
+            }
+          }
+        }
+      }
+    },
+    "recordItem": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/definitions/userAccount"
+        },
+        "to": {
+          "$ref": "#/definitions/userAccount"
+        },
+        "content": {
+          "type": "string",
+          "description": "聊天记录"
+        },
+        "activeDate": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "_id": {
+          "type": "string",
+          "description": "该条信息的唯一标识",
+          "example": "5954b800f17bb720940212dc"
+        }
+      }
+    },
+    "total": {
+      "type": "integer",
+      "description": "数据的总数",
+      "example": 13123
+    },
+    "timestamp": {
+      "type": "integer",
+      "description": "时间戳",
+      "example": 1498724352837
+    },
+    "icon": {
+      "type": "string",
+      "description": "用户头像的url"
+    },
+    "userName": {
+      "type": "string",
+      "description": "用户名"
+    },
+    "userAccount": {
+      "type": "string",
+      "description": "用户账号"
+    },
+    "message": {
+      "type": "string",
+      "description": "错误时返回的信息"
+    },
+    "status": {
+      "type": "integer",
+      "enum": [
+        1,
+        -1
+      ],
+      "description": "1表示成功 -1 表示失败"
+    },
+    "token": {
+      "type": "string",
+      "description": "token 用户进行后续操作进行验证身份的凭证 具有有效期",
+      "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0ZXN0ZXIxIzAuNzI0NzIxNDYzNTk1MjQ2NiIsImV4cCI6MTQ5OTMyOTcxNDQxM30.irai-CE35wN7zbdEGXOYWDnlwghMYEH6gcpaOSPC--c"
+    }
+  }
+}
