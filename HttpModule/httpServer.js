@@ -85,7 +85,6 @@ export default function ({port}={port:3000}) {
 
     app.use(printTime);
 
-    app.use(koaBody({ multipart: true }));
 
     app.use(koaStaticCache(path.join(__dirname, '../static'), {
         maxAge: 365 * 24 * 60 * 60

@@ -6,6 +6,7 @@ import operations from "../DBModule/Operation";
 import {getToken,delToken} from '../AuthModule';
 import {pushNotification} from '../SocketModule/socketServer';
 import {inviteCode} from '../Config/AppConfig';
+import koaBody from 'koa-body';
 import fs from 'fs';
 import path from 'path';
 const {
@@ -284,16 +285,19 @@ router.patch("/api/user/friend-request",async(ctx,next)=>{
 
             })
             .then(result=>{
+                pushNotification(targetAccount,{
+                    type:"friend-request/res",
+                    resCode,
+                    userAccount,
+                });
+
+
                 return ctx.response.body={
                     status: 1,
                     message:`response make friend request success `,
                 };
 
-                pushNotification(targetAccount,{
-                    type:"friend-request/res",
-                    resCode,
-                    userAccount,
-                })
+
 
             }).catch(e=>{
 
@@ -550,7 +554,7 @@ router.patch("/api/user/unread-messages",async(ctx,next)=>{
     }
 })
 
-router.patch("/api/user/icon",async(ctx,next)=>{
+router.patch("/api/user/icon",koaBody({ multipart: true }),async(ctx,next)=>{
     try{
         const file=ctx.request.body.files.file;
         const {userAccount}=ctx.state;
