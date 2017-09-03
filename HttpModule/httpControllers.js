@@ -178,6 +178,14 @@ router.get("/api/user",async(ctx,next)=>{
                 payload:result,
             }
         }).catch(e=>{
+
+            if(e.number===-2){
+                return ctx.response.body={
+                    status:-2,
+                    message:e.message,
+                }
+            }
+
             return ctx.response.body={
                 status:-1,
                 message:e.message,

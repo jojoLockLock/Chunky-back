@@ -84,10 +84,12 @@ userSchema.statics.findUserByAccount=function (value) {
   return new Promise((resolve,reject)=>{
       this.find({userAccount:value},(err,users)=>{
           if(err){
-            return reject(err)
+              return reject(err)
           }
           if(users.length===0){
-            return reject(new Error("can not found data by this account"))
+              let err=new Error("can not found data by this account");
+              err.number=-2;
+              return reject(err)
           }
           resolve(users[0].getPublicData())
       })
