@@ -80,6 +80,20 @@ userSchema.statics.queryUser=function (value,options={}) {
     })
 };
 
+userSchema.statics.findUserByAccount=function (value) {
+  return new Promise((resolve,reject)=>{
+      this.find({userAccount:value},(err,users)=>{
+          if(err){
+            return reject(err)
+          }
+          if(users.length===0){
+            return reject(new Error("can not found data by this account"))
+          }
+          resolve(users[0].getPublicData())
+      })
+  })
+};
+
 userSchema.methods.getLoginData=function () {
   return {
       userName:this.userName,

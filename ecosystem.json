@@ -2,7 +2,7 @@
   "apps": [{
     "name": "chunky-back",
     "script": "./index.js",
-    "autorestart": true,
+    "autorestart": false,
     "watch": true,
     "exec_interpreter": "babel-node",
     "ignore_watch":["node_modules","static"]

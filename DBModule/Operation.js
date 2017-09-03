@@ -290,6 +290,11 @@ function initUnreadMessagesCount(userAccount,targetAccount) {
 }
 
 
+
+function findUserByAccount(userAccount) {
+    return User.findUserByAccount(userAccount)
+}
+
 export default {
     createUser,
     becomeFriendsAndCreateChatRecords,
@@ -306,5 +311,6 @@ export default {
     getUserLoginData,
     initUnreadMessagesCount,
     getChatRecordsById,
+    findUserByAccount,
     // increaseUnreadMessagesCount,
 }

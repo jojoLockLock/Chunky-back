@@ -23,6 +23,7 @@ const {
     setUserInfo,
     getUserLoginData,
     initUnreadMessagesCount,
+    findUserByAccount,
 }=operations;
 
 const router=koaRouter();
@@ -159,7 +160,19 @@ router.get("/api/user",async(ctx,next)=>{
                 message:`value is required`,
             }
         }
-        await queryUser(value).then(result=>{
+        // await queryUser(value).then(result=>{
+        //     return ctx.response.body={
+        //         status:1,
+        //         payload:result,
+        //     }
+        // }).catch(e=>{
+        //     return ctx.response.body={
+        //         status:-1,
+        //         message:e.message,
+        //     }
+        // })
+
+        await findUserByAccount(value).then(result=>{
             return ctx.response.body={
                 status:1,
                 payload:result,
